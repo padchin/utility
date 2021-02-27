@@ -1,6 +1,8 @@
 package utility
 
 import (
+	"encoding/json"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -58,4 +60,63 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) (files_li
 		}
 	}
 	return
+}
+
+// GetFilesListByMask получение списка файлов по маске
+func GetFilesListByMask(mask string) ([]string, error) {
+	return filepath.Glob(mask)
+}
+
+// CopyFile copies the contents of the file named src to the file named
+// by dst. The file will be created if it does not already exist. If the
+// destination file exists, all it's contents will be replaced by the contents
+// of the source file.
+func CopyFile(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err_copy := out.Close()
+		if err == nil {
+			err = err_copy
+		}
+	}()
+	if _, err = io.Copy(out, in); err != nil {
+		return err
+	}
+	err = out.Sync()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func JSONDump(obj interface{}, file string) error {
+	json_bytes, err_json := json.MarshalIndent(obj, "", "    ")
+	if err_json != nil {
+		return err_json
+	}
+	err_write := ioutil.WriteFile(file, json_bytes, 0644)
+	if err_write != nil {
+		return err_write
+	}
+	return nil
+}
+
+func JSONLoad(obj interface{}, file string) error {
+	json_bytes, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(json_bytes, obj)
+	if err != nil {
+		return err
+	}
+	return nil
 }
