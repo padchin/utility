@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// ComputeMD5 вычисляет контрольную сумму MD5 файла
 func ComputeMD5(s_name string) (string, error) {
 	f, err := os.Open(s_name)
 	if err != nil {
