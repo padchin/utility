@@ -46,7 +46,15 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) (files_li
 			return nil, err2
 		}
 		for _, f := range files {
-			files_list = append(files_list, f.Name())
+			if len(extensions) > 0 {
+				for _, ext := range extensions {
+					if strings.HasSuffix(f.Name(), ext) {
+						files_list = append(files_list, f.Name())
+					}
+				}
+			} else {
+				files_list = append(files_list, f.Name())
+			}
 		}
 	}
 	return
