@@ -2,24 +2,36 @@ package utility
 
 import (
 	"encoding/json"
+	//"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	//"fmt"
 )
 
 // GetFilesByPath возвращает список файлов рекурсивно или нет с указанными расширениями или все не являющиеся каталогами
-func GetFilesByPath(path string, recursive bool, extensions ...string) (files_list []string, err error) {
-	//todo возвращать полное имя файла вместе с каталогами
-	var s_path string
-	s_path, err = filepath.Abs(filepath.Dir(path))
+func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string, error) {
+	var files_list []string
+	var err error
+	// проверяется если указанный путь является абсолютным, то используется он для построения списка
+	current_path := ""
+	if !filepath.IsAbs(path) {
+		current_path, err = os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+	}
+	s_path, err := filepath.Abs(filepath.Dir(path))
+	//fmt.Println(s_path)
 	if err != nil {
 		log.Println(err)
-		return
+		return nil, err
 	}
 	if recursive {
+
 		err2 := filepath.Walk(s_path,
 			func(path string, info os.FileInfo, err error) error {
 				if err != nil {
@@ -43,15 +55,7 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) (files_li
 			return nil, err2
 		}
 	} else {
-		current_path := ""
-		files, err2 := os.ReadDir(s_path)
-		// проверяется если указанный путь является абсолютным, то используется он для построения списка
-		if !filepath.IsAbs(s_path) {
-			current_path, err = os.Getwd()
-			if err != nil {
-				return nil, err
-			}
-		}
+		files, err2 := os.ReadDir(filepath.Join(current_path, path))
 		if err2 != nil {
 			log.Println(err)
 			return nil, err2
@@ -61,7 +65,7 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) (files_li
 				for _, ext := range extensions {
 					if strings.HasSuffix(f.Name(), ext) {
 						if len(current_path) > 0 {
-							files_list = append(files_list, filepath.Join(current_path, f.Name()))
+							files_list = append(files_list, filepath.Join(current_path, path, f.Name()))
 						} else {
 							files_list = append(files_list, filepath.Join(path, f.Name()))
 						}
@@ -69,14 +73,14 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) (files_li
 				}
 			} else {
 				if len(current_path) > 0 {
-					files_list = append(files_list, filepath.Join(current_path, f.Name()))
+					files_list = append(files_list, filepath.Join(current_path, path, f.Name()))
 				} else {
 					files_list = append(files_list, filepath.Join(path, f.Name()))
 				}
 			}
 		}
 	}
-	return
+	return files_list, nil
 }
 
 // GetFilesListByMask получение списка файлов по маске
