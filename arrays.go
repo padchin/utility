@@ -1,7 +1,7 @@
 package utility
 
-// MaxNumsCount вычисляет количество элементов в массиве с максимальным значением
-func MaxNumsCount(array *[]int) int {
+// MaxValueCount вычисляет количество элементов в массиве с максимальным значением
+func MaxValueCount(array *[]int) int {
 	ai_bias := make(map[int]int)
 	for _, x := range *array {
 		if _, ok := ai_bias[x]; ok {
@@ -12,13 +12,12 @@ func MaxNumsCount(array *[]int) int {
 	}
 	//find maximum
 	max_val := 0
-	value := 0
-	for key, count := range ai_bias {
+	values_count := 0
+	for key_value, count := range ai_bias {
 		if count > max_val {
 			max_val = count
-			value = key
+			values_count = key_value
 		}
-
 	}
-	return value
+	return values_count
 }

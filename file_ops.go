@@ -12,7 +12,7 @@ import (
 	//"fmt"
 )
 
-// GetFilesByPath возвращает список файлов рекурсивно или нет с указанными расширениями или все не являющиеся каталогами
+// GetFilesByPath возвращает список файлов рекурсивно или нет с указанными расширениями или все не являющихся каталогами
 func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string, error) {
 	var files_list []string
 	var err error
