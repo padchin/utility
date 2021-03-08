@@ -92,7 +92,6 @@ func EditMessageWithMarkup(iUserID int64, iMessageID int, s_message string, bot 
 	_, _ = (*bot).Send(msg)
 }
 
-
 func SendMessageWithMarkup(iUserID int64, message string, bot **telegram.BotAPI, markup telegram.InlineKeyboardMarkup, deletePrevious bool) {
 	if deletePrevious {
 		DeletePreviousMessages(iUserID, bot, false)
@@ -105,6 +104,7 @@ func SendMessageWithMarkup(iUserID int64, message string, bot **telegram.BotAPI,
 	msg.ReplyMarkup = markup
 	msg.ParseMode = "markdown"
 	reply, _ := (*bot).Send(msg)
+	storeKeyboardMessageID(iUserID, reply.MessageID)
 	UpdateMIArrays(sUserID, reply.MessageID, false)
 }
 
@@ -145,7 +145,7 @@ func UpdateMIArrays(userIDKey string, messageID int, isPassphrase bool) {
 	}
 }
 
-func StoreKeyboardMessageID(iUserID int64, iMessageID int) {
+func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 	m := make(map[int64]int)
 	_ = utility.JSONLoad(&m, "message_id_kb.json")
 	m[iUserID] = iMessageID
