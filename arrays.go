@@ -1,23 +1,23 @@
 package utility
 
-// MaxValueCount вычисляет количество элементов в массиве с максимальным значением
-func MaxValueCount(array *[]int) int {
-	ai_bias := make(map[int]int)
+// MaxValueElementsCount возвращает количество одинаковых элементов в массиве, имеющих максимальное значение.
+func MaxValueElementsCount(array *[]int) int {
+	aiBias := make(map[int]int)
 	for _, x := range *array {
-		if _, ok := ai_bias[x]; ok {
-			ai_bias[x]++
+		if _, ok := aiBias[x]; ok {
+			aiBias[x]++
 		} else {
-			ai_bias[x] = 1
+			aiBias[x] = 1
 		}
 	}
 	//find maximum
-	max_val := 0
-	values_count := 0
-	for key_value, count := range ai_bias {
-		if count > max_val {
-			max_val = count
-			values_count = key_value
+	maxVal := 0
+	valuesCount := 0
+	for keyValue, count := range aiBias {
+		if count > maxVal {
+			maxVal = count
+			valuesCount = keyValue
 		}
 	}
-	return values_count
+	return valuesCount
 }

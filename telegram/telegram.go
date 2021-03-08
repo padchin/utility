@@ -1,134 +1,146 @@
 package telegram
 
 import (
-	telegram_bot "github.com/padchin/telegram-bot-api"
+	telegram "github.com/padchin/telegram-bot-api"
 	"github.com/padchin/utility"
 	"log"
 	"strconv"
 )
 
-func LoadMessageID(obj *map[string][]int) error {
+func loadMessageID(obj *map[string][]int) error {
 	err := utility.JSONLoad(obj, "message_id.json")
 	if err != nil {
-		log.Printf("LoadMessageID error: %v", err)
+		log.Printf("loadMessageID error: %v", err)
 		return err
 	}
 	return nil
 }
 
-func LoadMessageIDPass(obj *[]int) error {
+func loadMessageIDPass(obj *[]int) error {
 	err := utility.JSONLoad(obj, "message_id_pass.json")
 	if err != nil {
-		log.Printf("LoadMessageID error: %v", err)
+		log.Printf("loadMessageID error: %v", err)
 		*obj = []int{}
 		return err
 	}
 	return nil
 }
 
-func DumpMessageIDPass(obj *[]int) error {
+func dumpMessageIDPass(obj *[]int) error {
 	err := utility.JSONDump(obj, "message_id_pass.json")
 	if err != nil {
-		log.Printf("DumpMessageIDPass error: %v", err)
+		log.Printf("dumpMessageIDPass error: %v", err)
 		return err
 	}
 	return nil
 }
 
-func DumpMessageID(obj *map[string][]int) error {
+func dumpMessageID(obj *map[string][]int) error {
 	err := utility.JSONDump(obj, "message_id.json")
 	if err != nil {
-		log.Printf("DumpMessageID error: %v", err)
+		log.Printf("dumpMessageID error: %v", err)
 		return err
 	}
 	return nil
 }
 
 // удаление ненужных сообщений
-func DeleteWasteMessages(i_user_id int64, bot **telegram_bot.BotAPI, b_is_passphrase bool) {
-	s_user_id := strconv.Itoa(int(i_user_id))
-	x_message_id_to_delete := make(map[string][]int)
+func DeletePreviousMessages(userID int64, bot **telegram.BotAPI, isPassphrase bool) {
+	sUserID := strconv.Itoa(int(userID))
+	m := make(map[string][]int)
+	var p []int
 
-	var ai_message_id_to_delete_pass_phrase []int
-	if !b_is_passphrase {
-		_ = LoadMessageID(&x_message_id_to_delete)
+	if !isPassphrase {
+		_ = loadMessageID(&m)
 	} else {
-		_ = LoadMessageIDPass(&ai_message_id_to_delete_pass_phrase)
+		_ = loadMessageIDPass(&p)
 	}
-	if !b_is_passphrase {
-		if len(x_message_id_to_delete[s_user_id]) > 0 {
-			for _, i_message_id := range x_message_id_to_delete[s_user_id] {
-				msg_delete := telegram_bot.NewDeleteMessage(i_user_id, i_message_id)
-				_, _ = (*bot).Send(msg_delete)
+	if !isPassphrase {
+		if len(m[sUserID]) > 0 {
+			for _, iMessageID := range m[sUserID] {
+				msgDelete := telegram.NewDeleteMessage(userID, iMessageID)
+				_, _ = (*bot).Send(msgDelete)
 			}
-			x_message_id_to_delete[s_user_id] = nil
+			m[sUserID] = nil
 		}
 	} else {
-		if len(ai_message_id_to_delete_pass_phrase) > 0 {
-			for _, i_message_id := range ai_message_id_to_delete_pass_phrase {
-				msg_delete := telegram_bot.NewDeleteMessage(i_user_id, i_message_id)
+		if len(p) > 0 {
+			for _, iMessageID := range p {
+				msg_delete := telegram.NewDeleteMessage(userID, iMessageID)
 				_, _ = (*bot).Send(msg_delete)
 			}
-			ai_message_id_to_delete_pass_phrase = nil
+			p = nil
 		}
 	}
-	if !b_is_passphrase {
-		_ = DumpMessageID(&x_message_id_to_delete)
+	if !isPassphrase {
+		_ = dumpMessageID(&m)
 	} else {
-		_ = DumpMessageIDPass(&ai_message_id_to_delete_pass_phrase)
+		_ = dumpMessageIDPass(&p)
 	}
 }
 
-type Keyboard telegram_bot.InlineKeyboardMarkup
+type Keyboard telegram.InlineKeyboardMarkup
 
-func SendMessageWithMarkup(i_user_id int64, s_message string, bot **telegram_bot.BotAPI, markup Keyboard, b_delete_previous bool) {
-	if b_delete_previous {
-		DeleteWasteMessages(i_user_id, bot, false)
-	}
-	s_user_id := strconv.Itoa(int(i_user_id))
-	msg := telegram_bot.NewMessage(
-		i_user_id,
+func EditMessageWithMarkup(iUserID int64, iMessageID int, s_message string, bot **telegram.BotAPI, markup Keyboard) {
+	msg := telegram.NewEditMessageTextAndMarkup(
+		iUserID,
+		iMessageID,
 		s_message,
+		telegram.InlineKeyboardMarkup(markup),
+	)
+	msg.ParseMode = "markdown"
+	_, _ = (*bot).Send(msg)
+}
+
+
+func SendMessageWithMarkup(iUserID int64, message string, bot **telegram.BotAPI, markup Keyboard, deletePrevious bool) {
+	if deletePrevious {
+		DeletePreviousMessages(iUserID, bot, false)
+	}
+	sUserID := strconv.Itoa(int(iUserID))
+	msg := telegram.NewMessage(
+		iUserID,
+		message,
 	)
 	msg.ReplyMarkup = markup
 	msg.ParseMode = "markdown"
 	reply, _ := (*bot).Send(msg)
-	UpdateMIArrays(s_user_id, reply.MessageID, false)
+	UpdateMIArrays(sUserID, reply.MessageID, false)
 }
 
-func SendMessage(i_user_id int64, s_message string, bot **telegram_bot.BotAPI, b_delete_previous bool) {
-	if b_delete_previous {
-		DeleteWasteMessages(i_user_id, bot, false)
+func SendMessage(isUserID int64, message string, bot **telegram.BotAPI, delete_previous bool) {
+	if delete_previous {
+		DeletePreviousMessages(isUserID, bot, false)
 	}
-	s_user_id := strconv.Itoa(int(i_user_id))
-	msg := telegram_bot.NewMessage(
-		i_user_id,
-		s_message,
+	sUserID := strconv.Itoa(int(isUserID))
+	msg := telegram.NewMessage(
+		isUserID,
+		message,
 	)
 	msg.ParseMode = "markdown"
 	reply, _ := (*bot).Send(msg)
-	UpdateMIArrays(s_user_id, reply.MessageID, false)
+	UpdateMIArrays(sUserID, reply.MessageID, false)
 }
 
-// UpdateMIArrays обновляет существующие массивы с идентификаторами сообщений для удаления
-// b_is_passphrase == true если это сообщения, связанные с паролями
-func UpdateMIArrays(s_user_id string, i_message_id int, b_is_passphrase bool) {
-	x_message_id_to_delete := make(map[string][]int)
-	var ai_message_id_to_delete_pass_phrase []int
+// UpdateMIArrays обновляет существующие массивы с идентификаторами сообщений для удаления.
+// is_passphrase == true если это сообщения, связанные с паролями, которые отправляются только админу.
+func UpdateMIArrays(userIDKey string, messageID int, isPassphrase bool) {
+	m := make(map[string][]int)
+	var p []int
 
-	if !b_is_passphrase {
-		_ = LoadMessageID(&x_message_id_to_delete)
+	if !isPassphrase {
+		_ = loadMessageID(&m)
 	} else {
-		_ = LoadMessageIDPass(&ai_message_id_to_delete_pass_phrase)
+		_ = loadMessageIDPass(&p)
 	}
-	if !b_is_passphrase {
-		x_message_id_to_delete[s_user_id] = append(x_message_id_to_delete[s_user_id], i_message_id)
+	if !isPassphrase {
+		m[userIDKey] = append(m[userIDKey], messageID)
 	} else {
-		ai_message_id_to_delete_pass_phrase = append(ai_message_id_to_delete_pass_phrase, i_message_id)
+		p = append(p, messageID)
 	}
-	if !b_is_passphrase {
-		_ = DumpMessageID(&x_message_id_to_delete)
+	if !isPassphrase {
+		_ = dumpMessageID(&m)
 	} else {
-		_ = DumpMessageIDPass(&ai_message_id_to_delete_pass_phrase)
+		_ = dumpMessageIDPass(&p)
 	}
 }

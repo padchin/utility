@@ -6,10 +6,10 @@ import (
 
 // LocalTimeFormatFromUnix возвращает форматированную строку в формате 02.01.2006 15:04:05 без долей секунды,
 // если не указан формат, или в соответствии с указанным форматом в местном времени (+3)
-func LocalTimeFormatFromUnix(unix_time int, format ...string) string {
+func LocalTimeFormatFromUnix(unixTime int, format ...string) string {
 	loc, _ := time.LoadLocation("Europe/Moscow")
 	time.Local = loc
-	t := time.Unix(int64(unix_time), 0).Local()
+	t := time.Unix(int64(unixTime), 0).Local()
 	if len(format) > 0 {
 		return t.Format(format[0])
 	} else {
@@ -19,10 +19,10 @@ func LocalTimeFormatFromUnix(unix_time int, format ...string) string {
 
 // LocalTimeFormatFromUnixNano возвращает форматированную строку в формате 02.01.2006 15:04:05 без долей секунды,
 // если не указан формат, или в соответствии с указанным форматом в местном времени (+3)
-func LocalTimeFormatFromUnixNano(unix_time int, format ...string) string {
+func LocalTimeFormatFromUnixNano(unixTime int, format ...string) string {
 	loc, _ := time.LoadLocation("Europe/Moscow")
 	time.Local = loc
-	t := time.Unix(int64(unix_time/1e9), int64(unix_time%1e9)).Local()
+	t := time.Unix(int64(unixTime/1e9), int64(unixTime%1e9)).Local()
 	if len(format) > 0 {
 		return t.Format(format[0])
 	} else {
