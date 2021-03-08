@@ -66,8 +66,8 @@ func DeletePreviousMessages(userID int64, bot **telegram.BotAPI, isPassphrase bo
 	} else {
 		if len(p) > 0 {
 			for _, iMessageID := range p {
-				msg_delete := telegram.NewDeleteMessage(userID, iMessageID)
-				_, _ = (*bot).Send(msg_delete)
+				msgDelete := telegram.NewDeleteMessage(userID, iMessageID)
+				_, _ = (*bot).Send(msgDelete)
 			}
 			p = nil
 		}
@@ -81,7 +81,7 @@ func DeletePreviousMessages(userID int64, bot **telegram.BotAPI, isPassphrase bo
 
 type Keyboard telegram.InlineKeyboardMarkup
 
-func EditMessageWithMarkup(iUserID int64, iMessageID int, s_message string, bot **telegram.BotAPI, markup Keyboard) {
+func EditMessageWithMarkup(iUserID int64, iMessageID int, s_message string, bot **telegram.BotAPI, markup telegram.InlineKeyboardMarkup) {
 	msg := telegram.NewEditMessageTextAndMarkup(
 		iUserID,
 		iMessageID,
@@ -93,7 +93,7 @@ func EditMessageWithMarkup(iUserID int64, iMessageID int, s_message string, bot 
 }
 
 
-func SendMessageWithMarkup(iUserID int64, message string, bot **telegram.BotAPI, markup Keyboard, deletePrevious bool) {
+func SendMessageWithMarkup(iUserID int64, message string, bot **telegram.BotAPI, markup telegram.InlineKeyboardMarkup, deletePrevious bool) {
 	if deletePrevious {
 		DeletePreviousMessages(iUserID, bot, false)
 	}
@@ -108,8 +108,8 @@ func SendMessageWithMarkup(iUserID int64, message string, bot **telegram.BotAPI,
 	UpdateMIArrays(sUserID, reply.MessageID, false)
 }
 
-func SendMessage(isUserID int64, message string, bot **telegram.BotAPI, delete_previous bool) {
-	if delete_previous {
+func SendMessage(isUserID int64, message string, bot **telegram.BotAPI, deletePrevious bool) {
+	if deletePrevious {
 		DeletePreviousMessages(isUserID, bot, false)
 	}
 	sUserID := strconv.Itoa(int(isUserID))
@@ -143,4 +143,25 @@ func UpdateMIArrays(userIDKey string, messageID int, isPassphrase bool) {
 	} else {
 		_ = dumpMessageIDPass(&p)
 	}
+}
+
+func StoreKeyboardMessageID(iUserID int64, iMessageID int) {
+	m := make(map[int64]int)
+	_ = utility.JSONLoad(&m, "message_id_kb.json")
+	m[iUserID] = iMessageID
+	err := utility.JSONDump(&m, "message_id_kb.json")
+	if err != nil {
+		log.Printf("%v", err)
+		return
+	}
+}
+
+func GetKeyboardMessageID(iUserID int64) int {
+	m := make(map[int64]int)
+	err := utility.JSONLoad(&m, "message_id_kb.json")
+	if err != nil {
+		log.Printf("%v", err)
+		return 0
+	}
+	return m[iUserID]
 }
