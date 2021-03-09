@@ -2,24 +2,25 @@ package telegram
 
 import (
 	telegram "github.com/padchin/telegram-bot-api"
-	"github.com/padchin/utility"
+	u "github.com/padchin/utility"
 	"log"
 	"strconv"
 )
 
 type TButton struct {
-	Text string
-	Data string
+	Text         string
+	CallbackData string
 }
 
 type Keyboard telegram.InlineKeyboardMarkup
 
+// AddButtonsRow метод для создания одного ряда, состоящего из одной или нескольких кнопок.
 func (k *Keyboard) AddButtonsRow(buttons ...TButton) {
 	var row []telegram.InlineKeyboardButton
 	for _, b := range buttons {
 		row = append(row, telegram.NewInlineKeyboardButtonData(
 			b.Text,
-			b.Data,
+			b.CallbackData,
 		))
 	}
 	(*k).InlineKeyboard = append((*k).InlineKeyboard, row)
@@ -27,7 +28,7 @@ func (k *Keyboard) AddButtonsRow(buttons ...TButton) {
 
 
 func loadMessageID(obj *map[string][]int) error {
-	err := utility.JSONLoad(obj, "message_id.json")
+	err := u.JSONLoad(obj, "message_id.json")
 	if err != nil {
 		log.Printf("loadMessageID error: %v", err)
 		return err
@@ -36,7 +37,7 @@ func loadMessageID(obj *map[string][]int) error {
 }
 
 func loadMessageIDPass(obj *[]int) error {
-	err := utility.JSONLoad(obj, "message_id_pass.json")
+	err := u.JSONLoad(obj, "message_id_pass.json")
 	if err != nil {
 		log.Printf("loadMessageID error: %v", err)
 		*obj = []int{}
@@ -46,7 +47,7 @@ func loadMessageIDPass(obj *[]int) error {
 }
 
 func dumpMessageIDPass(obj *[]int) error {
-	err := utility.JSONDump(obj, "message_id_pass.json")
+	err := u.JSONDump(obj, "message_id_pass.json")
 	if err != nil {
 		log.Printf("dumpMessageIDPass error: %v", err)
 		return err
@@ -55,7 +56,7 @@ func dumpMessageIDPass(obj *[]int) error {
 }
 
 func dumpMessageID(obj *map[string][]int) error {
-	err := utility.JSONDump(obj, "message_id.json")
+	err := u.JSONDump(obj, "message_id.json")
 	if err != nil {
 		log.Printf("dumpMessageID error: %v", err)
 		return err
@@ -164,9 +165,9 @@ func UpdateMIArrays(userIDKey string, messageID int, isPassphrase bool) {
 
 func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 	m := make(map[int64]int)
-	_ = utility.JSONLoad(&m, "message_id_kb.json")
+	_ = u.JSONLoad(&m, "message_id_kb.json")
 	m[iUserID] = iMessageID
-	err := utility.JSONDump(&m, "message_id_kb.json")
+	err := u.JSONDump(&m, "message_id_kb.json")
 	if err != nil {
 		log.Printf("%v", err)
 		return
@@ -175,7 +176,7 @@ func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 
 func GetKeyboardMessageID(iUserID int64) int {
 	m := make(map[int64]int)
-	err := utility.JSONLoad(&m, "message_id_kb.json")
+	err := u.JSONLoad(&m, "message_id_kb.json")
 	if err != nil {
 		log.Printf("%v", err)
 		return 0
