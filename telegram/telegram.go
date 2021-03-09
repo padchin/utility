@@ -8,8 +8,8 @@ import (
 )
 
 type TButton struct {
-	text string
-	data string
+	Text string
+	Data string
 }
 
 type Keyboard telegram.InlineKeyboardMarkup
@@ -18,8 +18,8 @@ func (k *Keyboard) AddButtonsRow(buttons ...TButton) {
 	var row []telegram.InlineKeyboardButton
 	for _, b := range buttons {
 		row = append(row, telegram.NewInlineKeyboardButtonData(
-			b.text,
-			b.data,
+			b.Text,
+			b.Data,
 		))
 	}
 	(*k).InlineKeyboard = append((*k).InlineKeyboard, row)
