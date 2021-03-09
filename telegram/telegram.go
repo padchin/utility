@@ -7,6 +7,25 @@ import (
 	"strconv"
 )
 
+type TButton struct {
+	text string
+	data string
+}
+
+type Keyboard telegram.InlineKeyboardMarkup
+
+func (k *Keyboard) AddButtonsRow(buttons ...TButton) {
+	var row []telegram.InlineKeyboardButton
+	for _, b := range buttons {
+		row = append(row, telegram.NewInlineKeyboardButtonData(
+			b.text,
+			b.data,
+		))
+	}
+	(*k).InlineKeyboard = append((*k).InlineKeyboard, row)
+}
+
+
 func loadMessageID(obj *map[string][]int) error {
 	err := utility.JSONLoad(obj, "message_id.json")
 	if err != nil {
@@ -78,8 +97,6 @@ func DeletePreviousMessages(userID int64, bot **telegram.BotAPI, isPassphrase bo
 		_ = dumpMessageIDPass(&p)
 	}
 }
-
-type Keyboard telegram.InlineKeyboardMarkup
 
 func EditMessageWithMarkup(iUserID int64, iMessageID int, s_message string, bot **telegram.BotAPI, markup telegram.InlineKeyboardMarkup) {
 	msg := telegram.NewEditMessageTextAndMarkup(
