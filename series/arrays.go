@@ -1,7 +1,7 @@
-package utility
+package series
 
-// MaxValueElementsCount возвращает количество одинаковых элементов в массиве, имеющих максимальное значение.
-func MaxValueElementsCount(array *[]int) int {
+// MaxValueElementsCount возвращает максимальный по значению элемент и их количество.
+func MaxValueElementsCount(array *[]int) (int, int) {
 	aiBias := make(map[int]int)
 	for _, x := range *array {
 		if _, ok := aiBias[x]; ok {
@@ -19,5 +19,5 @@ func MaxValueElementsCount(array *[]int) int {
 			valuesCount = keyValue
 		}
 	}
-	return valuesCount
+	return maxVal, valuesCount
 }

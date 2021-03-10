@@ -2,7 +2,7 @@ package telegram
 
 import (
 	telegram "github.com/padchin/telegram-bot-api"
-	u "github.com/padchin/utility"
+	"github.com/padchin/utility/io"
 	"log"
 	"strconv"
 )
@@ -28,7 +28,7 @@ func (k *Keyboard) AddButtonsRow(buttons ...TButton) {
 
 
 func loadMessageID(obj *map[string][]int) error {
-	err := u.JSONLoad(obj, "message_id.json")
+	err := io.JSONLoad(obj, "message_id.json")
 	if err != nil {
 		log.Printf("loadMessageID error: %v", err)
 		return err
@@ -37,7 +37,7 @@ func loadMessageID(obj *map[string][]int) error {
 }
 
 func loadMessageIDPass(obj *[]int) error {
-	err := u.JSONLoad(obj, "message_id_pass.json")
+	err := io.JSONLoad(obj, "message_id_pass.json")
 	if err != nil {
 		log.Printf("loadMessageID error: %v", err)
 		*obj = []int{}
@@ -47,7 +47,7 @@ func loadMessageIDPass(obj *[]int) error {
 }
 
 func dumpMessageIDPass(obj *[]int) error {
-	err := u.JSONDump(obj, "message_id_pass.json")
+	err := io.JSONDump(obj, "message_id_pass.json")
 	if err != nil {
 		log.Printf("dumpMessageIDPass error: %v", err)
 		return err
@@ -56,7 +56,7 @@ func dumpMessageIDPass(obj *[]int) error {
 }
 
 func dumpMessageID(obj *map[string][]int) error {
-	err := u.JSONDump(obj, "message_id.json")
+	err := io.JSONDump(obj, "message_id.json")
 	if err != nil {
 		log.Printf("dumpMessageID error: %v", err)
 		return err
@@ -165,9 +165,9 @@ func UpdateMIArrays(userIDKey string, messageID int, isPassphrase bool) {
 
 func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 	m := make(map[int64]int)
-	_ = u.JSONLoad(&m, "message_id_kb.json")
+	_ = io.JSONLoad(&m, "message_id_kb.json")
 	m[iUserID] = iMessageID
-	err := u.JSONDump(&m, "message_id_kb.json")
+	err := io.JSONDump(&m, "message_id_kb.json")
 	if err != nil {
 		log.Printf("%v", err)
 		return
@@ -176,7 +176,7 @@ func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 
 func GetKeyboardMessageID(iUserID int64) int {
 	m := make(map[int64]int)
-	err := u.JSONLoad(&m, "message_id_kb.json")
+	err := io.JSONLoad(&m, "message_id_kb.json")
 	if err != nil {
 		log.Printf("%v", err)
 		return 0

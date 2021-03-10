@@ -1,38 +1,35 @@
-package utility
+package io
 
 import (
 	"encoding/json"
-	//"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
-	//"fmt"
 )
 
 // GetFilesByPath возвращает список файлов рекурсивно или нет с указанными расширениями или все не являющихся каталогами
 func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string, error) {
-	var files_list []string
+	var asFilesList []string
 	var err error
 	// проверяется если указанный путь является абсолютным, то используется он для построения списка
-	current_path := ""
+	sCurrentPath := ""
 	if !filepath.IsAbs(path) {
-		current_path, err = os.Getwd()
+		sCurrentPath, err = os.Getwd()
 		if err != nil {
 			return nil, err
 		}
 	}
-	s_path, err := filepath.Abs(filepath.Dir(path))
+	sPath, err := filepath.Abs(filepath.Dir(path))
 	//fmt.Println(s_path)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 	if recursive {
-
-		err2 := filepath.Walk(s_path,
+		err2 := filepath.Walk(sPath,
 			func(path string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
@@ -41,11 +38,11 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string
 					if len(extensions) > 0 {
 						for _, ext := range extensions {
 							if strings.HasSuffix(info.Name(), ext) {
-								files_list = append(files_list, path)
+								asFilesList = append(asFilesList, path)
 							}
 						}
 					} else {
-						files_list = append(files_list, path)
+						asFilesList = append(asFilesList, path)
 					}
 				}
 				return nil
@@ -55,7 +52,7 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string
 			return nil, err2
 		}
 	} else {
-		files, err2 := os.ReadDir(filepath.Join(current_path, path))
+		files, err2 := os.ReadDir(filepath.Join(sCurrentPath, path))
 		if err2 != nil {
 			log.Println(err)
 			return nil, err2
@@ -64,23 +61,23 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string
 			if len(extensions) > 0 {
 				for _, ext := range extensions {
 					if strings.HasSuffix(f.Name(), ext) {
-						if len(current_path) > 0 {
-							files_list = append(files_list, filepath.Join(current_path, path, f.Name()))
+						if len(sCurrentPath) > 0 {
+							asFilesList = append(asFilesList, filepath.Join(sCurrentPath, path, f.Name()))
 						} else {
-							files_list = append(files_list, filepath.Join(path, f.Name()))
+							asFilesList = append(asFilesList, filepath.Join(path, f.Name()))
 						}
 					}
 				}
 			} else {
-				if len(current_path) > 0 {
-					files_list = append(files_list, filepath.Join(current_path, path, f.Name()))
+				if len(sCurrentPath) > 0 {
+					asFilesList = append(asFilesList, filepath.Join(sCurrentPath, path, f.Name()))
 				} else {
-					files_list = append(files_list, filepath.Join(path, f.Name()))
+					asFilesList = append(asFilesList, filepath.Join(path, f.Name()))
 				}
 			}
 		}
 	}
-	return files_list, nil
+	return asFilesList, nil
 }
 
 // GetFilesListByMask получение списка файлов по маске
@@ -103,9 +100,9 @@ func CopyFile(src, dst string) error {
 		return err
 	}
 	defer func() {
-		err_copy := out.Close()
+		errCopy := out.Close()
 		if err == nil {
-			err = err_copy
+			err = errCopy
 		}
 	}()
 	if _, err = io.Copy(out, in); err != nil {
@@ -119,24 +116,24 @@ func CopyFile(src, dst string) error {
 }
 
 func JSONDump(obj interface{}, file string) error {
-	json_bytes, err_json := json.MarshalIndent(obj, "", "    ")
-	if err_json != nil {
-		return err_json
+	jsonBytes, errJson := json.MarshalIndent(obj, "", "    ")
+	if errJson != nil {
+		return errJson
 	}
-	err_write := ioutil.WriteFile(file, json_bytes, 0644)
-	if err_write != nil {
-		return err_write
+	errWrite := ioutil.WriteFile(file, jsonBytes, 0644)
+	if errWrite != nil {
+		return errWrite
 	}
 	return nil
 }
 
 //JSONLoad
 func JSONLoad(obj interface{}, file string) error {
-	json_bytes, err := ioutil.ReadFile(file)
+	jsonBytes, err := ioutil.ReadFile(file)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(json_bytes, obj)
+	err = json.Unmarshal(jsonBytes, obj)
 	if err != nil {
 		return err
 	}
