@@ -99,17 +99,20 @@ func DeletePreviousMessages(userID int64, bot **telegram.BotAPI, isPassphrase bo
 	}
 }
 
-func EditMessageWithMarkup(iUserID int64, iMessageID int, s_message string, bot **telegram.BotAPI, markup telegram.InlineKeyboardMarkup) {
+func EditMessageWithMarkup(iUserID int64, iMessageID int, sMessage string, bot **telegram.BotAPI, markup telegram.InlineKeyboardMarkup) {
 	msg := telegram.NewEditMessageTextAndMarkup(
 		iUserID,
 		iMessageID,
-		s_message,
-		telegram.InlineKeyboardMarkup(markup),
+		sMessage,
+		markup,
 	)
 	msg.ParseMode = "markdown"
 	_, _ = (*bot).Send(msg)
 }
 
+// SendMessageWithMarkup отправляет сообщение с клавиатурой с использованием экземпляра бота и добавляет messageID в базу для
+// последующего удаления. Если требуется удалить предыдущие сообщения, имеющиеся в базе, установить флаг deletePrevious
+// в true.
 func SendMessageWithMarkup(iUserID int64, message string, bot **telegram.BotAPI, markup telegram.InlineKeyboardMarkup, deletePrevious bool) {
 	if deletePrevious {
 		DeletePreviousMessages(iUserID, bot, false)
@@ -126,22 +129,30 @@ func SendMessageWithMarkup(iUserID int64, message string, bot **telegram.BotAPI,
 	UpdateMIArrays(sUserID, reply.MessageID, false)
 }
 
-func SendMessage(isUserID int64, message string, bot **telegram.BotAPI, deletePrevious bool) {
+// SendMessage отправляет сообщение без клавиатуры с использованием экземпляра бота и добавляет messageID в базу для
+// последующего удаления. Если требуется удалить предыдущие сообщения, имеющиеся в базе, установить флаг deletePrevious
+// в true. Если нужно исключить сообщение из базы для последующего удаления установить флаг persist в true.
+func SendMessage(iUserID int64, sMessage string, bot **telegram.BotAPI, deletePrevious bool, persist ...bool) {
 	if deletePrevious {
-		DeletePreviousMessages(isUserID, bot, false)
+		DeletePreviousMessages(iUserID, bot, false)
 	}
-	sUserID := strconv.Itoa(int(isUserID))
+	sUserID := strconv.Itoa(int(iUserID))
 	msg := telegram.NewMessage(
-		isUserID,
-		message,
+		iUserID,
+		sMessage,
 	)
 	msg.ParseMode = "markdown"
 	reply, _ := (*bot).Send(msg)
+	if len(persist) > 0 {
+		if persist[0] {
+			return
+		}
+	}
 	UpdateMIArrays(sUserID, reply.MessageID, false)
 }
 
 // UpdateMIArrays обновляет существующие массивы с идентификаторами сообщений для удаления.
-// is_passphrase == true если это сообщения, связанные с паролями, которые отправляются только админу.
+// isPassphrase - true если это сообщения, связанные с паролями, которые отправляются только админу.
 func UpdateMIArrays(userIDKey string, messageID int, isPassphrase bool) {
 	m := make(map[string][]int)
 	var p []int
@@ -174,6 +185,7 @@ func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 	}
 }
 
+// GetKeyboardMessageID возвращает messageID последней выведенной клавиатуры для редактирования.
 func GetKeyboardMessageID(iUserID int64) int {
 	m := make(map[int64]int)
 	err := io.JSONLoad(&m, "message_id_kb.json")

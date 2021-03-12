@@ -52,46 +52,47 @@ func CheckPassword(password string, hash ...string) (bool, error) {
 // GeneratePasswordAndStoreNewHash вызывает passPhraseGen и записывает новый хэш пароля на диск и возвращает сгенерированный пароль
 // из простых символов ascii с некоторым исключением для удобства набора на клавиатуре.
 func GeneratePasswordAndStoreNewHash() ([]byte, error) {
-	pass_phrase := passPhraseGen(12)
-	byte_hash, err_hash := bcrypt.GenerateFromPassword(pass_phrase, 10)
-	if err_hash != nil {
-		return nil, err_hash
+	passPhrase := passPhraseGen(12)
+	byteHash, errHash := bcrypt.GenerateFromPassword(passPhrase, 10)
+	if errHash != nil {
+		return nil, errHash
 	}
-	err_write := secretHashWrite(&byte_hash)
-	if err_write != nil {
-		return nil, err_write
+	errWrite := secretHashWrite(&byteHash)
+	if errWrite != nil {
+		return nil, errWrite
 	} else {
-		return pass_phrase, nil
+		return passPhrase, nil
 	}
 }
 
-func passPhraseGen(phrase_length int) []byte {
-	var pass_phrase []byte
+func passPhraseGen(iPhraseLength int) []byte {
+	var bytePassPhrase []byte
 	rand.Seed(time.Now().UnixNano())
-	for i := 1; i <= phrase_length; i++ {
+	for i := 1; i <= iPhraseLength; i++ {
 	Gen:
-		rand_number := uint8(rand.Intn(125-33) + 33)
-		switch rand_number {
+		uiRandNumber := uint8(rand.Intn(125-33) + 33)
+		switch uiRandNumber {
 		// убираются некоторые неудобные символы
 		case 34, 39, 44, 45, 46, 94, 96, 124:
+			//todo сделать защиту от бесконечного цикла
 			goto Gen
 		default:
-			pass_phrase = append(pass_phrase, rand_number)
+			bytePassPhrase = append(bytePassPhrase, uiRandNumber)
 		}
 	}
-	return pass_phrase
+	return bytePassPhrase
 }
 
 func secretHashRead() ([]byte, error) {
-	secret, err_read := ioutil.ReadFile("secret")
-	if err_read != nil {
-		return nil, err_read
+	secret, errRead := ioutil.ReadFile("secret")
+	if errRead != nil {
+		return nil, errRead
 	}
 	return secret, nil
 }
 
 // secretHashWrite записывает хэш в файл secret текущего каталога.
 func secretHashWrite(secret *[]byte) error {
-	err_write := ioutil.WriteFile("secret", *secret, 0777)
-	return err_write
+	errWrite := ioutil.WriteFile("secret", *secret, 0777)
+	return errWrite
 }
