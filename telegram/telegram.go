@@ -76,9 +76,13 @@ func DeletePreviousMessages(userID int64, bot **telegram.BotAPI, isPassphrase bo
 	}
 	if !isPassphrase {
 		if len(m[sUserID]) > 0 {
+			// исключаем активную клавиатуру из списка на удаление
+			exMessage := GetKeyboardMessageID(userID)
 			for _, iMessageID := range m[sUserID] {
-				msgDelete := telegram.NewDeleteMessage(userID, iMessageID)
-				_, _ = (*bot).Send(msgDelete)
+				if iMessageID != exMessage {
+					msgDelete := telegram.NewDeleteMessage(userID, iMessageID)
+					_, _ = (*bot).Send(msgDelete)
+				}
 			}
 			m[sUserID] = nil
 		}
