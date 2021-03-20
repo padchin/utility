@@ -26,7 +26,6 @@ func (k *Keyboard) AddButtonsRow(buttons ...TButton) {
 	(*k).InlineKeyboard = append((*k).InlineKeyboard, row)
 }
 
-
 func loadMessageID(obj *map[string][]int) error {
 	err := io.JSONLoad(obj, "message_id.json")
 	if err != nil {
@@ -99,7 +98,13 @@ func DeletePreviousMessages(userID int64, bot **telegram.BotAPI, isPassphrase bo
 	}
 }
 
-func EditMessageWithMarkup(iUserID int64, iMessageID int, sMessage string, bot **telegram.BotAPI, markup telegram.InlineKeyboardMarkup) {
+
+func EditMessageWithMarkup(iUserID int64, iMessageID int, sMessage string, bot **telegram.BotAPI, markup telegram.InlineKeyboardMarkup, deletePrevious ...bool) {
+	if len(deletePrevious) > 0 {
+		if deletePrevious[0] {
+			DeletePreviousMessages(iUserID, bot, false)
+		}
+	}
 	msg := telegram.NewEditMessageTextAndMarkup(
 		iUserID,
 		iMessageID,
