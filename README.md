@@ -1,4 +1,6 @@
-# Utility
-## Version 0.2.2
+#Utility
+##Version 0.2.3
 
-Здесь собраны общие инструменты, используемые в моих программах.
+###Telegram
+`DeletePreviousMessages`<br>
+`EditMessageWithMarkup`

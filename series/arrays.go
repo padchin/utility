@@ -4,7 +4,8 @@ package series
 func MaxValueElementsCount(array *[]int) (int, int) {
 	aiBias := make(map[int]int)
 	for _, x := range *array {
-		if _, ok := aiBias[x]; ok {
+		if //goland:noinspection GoLinterLocal
+		_, ok := aiBias[x]; ok {
 			aiBias[x]++
 		} else {
 			aiBias[x] = 1
