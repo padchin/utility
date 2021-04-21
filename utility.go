@@ -10,7 +10,7 @@ import (
 
 const iAdminChatID int64 = 726713220
 
-//ErrorReport возвращает true, если сообщение об ошибке опубликовано в логах и в Telegram, при наличии связи. Если
+// ErrorReport возвращает true, если сообщение об ошибке опубликовано в логах и в Telegram, при наличии связи. Если
 //указан интервал 0, то ошибка публикуется в любом случае. Если интервал не 0, то нужно указать ссылку на время
 //последней публикации, которое при удачной публикации изменяется на текущее.
 func ErrorReport(bot *telegram.BotAPI, err string, interval time.Duration, lastReported ...*time.Time) bool {

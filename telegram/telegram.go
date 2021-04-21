@@ -7,6 +7,8 @@ import (
 	"strconv"
 )
 
+const csMarkdown = "markdown"
+
 type TButton struct {
 	Text         string
 	CallbackData string
@@ -63,7 +65,7 @@ func dumpMessageID(obj *map[string][]int) error {
 	return nil
 }
 
-// удаление ненужных сообщений
+// DeletePreviousMessages удаление ненужных сообщений
 func DeletePreviousMessages(userID int64, bot *telegram.BotAPI, isPassphrase bool) {
 	sUserID := strconv.Itoa(int(userID))
 	m := make(map[string][]int)
@@ -102,7 +104,6 @@ func DeletePreviousMessages(userID int64, bot *telegram.BotAPI, isPassphrase boo
 	}
 }
 
-
 func EditMessageWithMarkup(iUserID int64, iMessageID int, sMessage string, bot *telegram.BotAPI, markup telegram.InlineKeyboardMarkup, deletePrevious ...bool) {
 	if len(deletePrevious) > 0 {
 		if deletePrevious[0] {
@@ -115,7 +116,7 @@ func EditMessageWithMarkup(iUserID int64, iMessageID int, sMessage string, bot *
 		sMessage,
 		markup,
 	)
-	msg.ParseMode = "markdown"
+	msg.ParseMode = csMarkdown
 	_, _ = bot.Send(msg)
 }
 
@@ -132,7 +133,7 @@ func SendMessageWithMarkup(iUserID int64, message string, bot *telegram.BotAPI, 
 		message,
 	)
 	msg.ReplyMarkup = markup
-	msg.ParseMode = "markdown"
+	msg.ParseMode = csMarkdown
 	reply, _ := (*bot).Send(msg)
 	storeKeyboardMessageID(iUserID, reply.MessageID)
 	UpdateMIArrays(sUserID, reply.MessageID, false)
@@ -150,7 +151,7 @@ func SendMessage(iUserID int64, sMessage string, bot *telegram.BotAPI, deletePre
 		iUserID,
 		sMessage,
 	)
-	msg.ParseMode = "markdown"
+	msg.ParseMode = csMarkdown
 	reply, _ := bot.Send(msg)
 	if len(persist) > 0 {
 		if persist[0] {

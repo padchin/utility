@@ -23,7 +23,6 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string
 		}
 	}
 	sPath, err := filepath.Abs(filepath.Dir(path))
-	//fmt.Println(s_path)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -116,18 +115,18 @@ func CopyFile(src, dst string) error {
 }
 
 func JSONDump(obj interface{}, file string) error {
-	jsonBytes, errJson := json.MarshalIndent(obj, "", "    ")
-	if errJson != nil {
-		return errJson
+	_ = CopyFile(file, file+".bak")
+	jsonBytes, err := json.MarshalIndent(obj, "", "    ")
+	if err != nil {
+		return err
 	}
-	errWrite := ioutil.WriteFile(file, jsonBytes, 0644)
-	if errWrite != nil {
-		return errWrite
+	err = ioutil.WriteFile(file, jsonBytes, 0600)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
-//JSONLoad
 func JSONLoad(obj interface{}, file string) error {
 	jsonBytes, err := ioutil.ReadFile(file)
 	if err != nil {

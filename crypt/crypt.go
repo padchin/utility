@@ -6,7 +6,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
 	"time"
@@ -16,13 +15,11 @@ import (
 func ComputeMD5(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		log.Printf("невозможно открыть файл: %v", err)
 		return "", err
 	}
 	defer f.Close()
 	h := md5.New()
 	if _, err = io.Copy(h, f); err != nil {
-		log.Printf("невозможно вычислить MD5: %v", err)
 		return "", err
 	}
 	return fmt.Sprintf("%X", h.Sum(nil)), nil
@@ -74,7 +71,7 @@ func passPhraseGen(iPhraseLength int) []byte {
 		switch uiRandNumber {
 		// убираются некоторые неудобные символы
 		case 34, 39, 44, 45, 46, 94, 96, 124:
-			//todo сделать защиту от бесконечного цикла
+			// todo сделать защиту от бесконечного цикла
 			goto Gen
 		default:
 			bytePassPhrase = append(bytePassPhrase, uiRandNumber)
@@ -93,6 +90,6 @@ func secretHashRead() ([]byte, error) {
 
 // secretHashWrite записывает хэш в файл secret текущего каталога.
 func secretHashWrite(secret *[]byte) error {
-	errWrite := ioutil.WriteFile("secret", *secret, 0777)
+	errWrite := ioutil.WriteFile("secret", *secret, 0600)
 	return errWrite
 }

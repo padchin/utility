@@ -3,6 +3,7 @@ package remote
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os/exec"
 	"runtime"
 	"sync"
@@ -14,7 +15,7 @@ import (
 // необходимости блокировки.
 func SecureCopyLinux(src string, dest string, timeout int, srcLocker *sync.RWMutex, destLocker *sync.RWMutex) error {
 	if runtime.GOOS != "linux" {
-		return errors.New("SecureCopyLinux: is only supported on unix systems")
+		return fmt.Errorf("SecureCopyLinux: is only supported on unix systems")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
@@ -27,7 +28,7 @@ func SecureCopyLinux(src string, dest string, timeout int, srcLocker *sync.RWMut
 		defer destLocker.Unlock()
 	}
 	_, err := exec.CommandContext(ctx, "scp", "-o ConnectTimeout=30", src, dest).Output()
-	if ctx.Err() == context.DeadlineExceeded {
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 		return context.DeadlineExceeded
 	}
 	if err != nil {

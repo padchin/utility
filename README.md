@@ -1,5 +1,5 @@
 #Utility
-##Version 0.2.5
+##Version 0.2.7
 
 ###Telegram
 `DeletePreviousMessages`<br>
