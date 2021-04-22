@@ -120,7 +120,7 @@ func JSONDump(obj interface{}, file string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(file, jsonBytes, 0600)
+	err = ioutil.WriteFile(file, jsonBytes, 0644)
 	if err != nil {
 		return err
 	}
