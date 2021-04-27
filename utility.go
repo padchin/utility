@@ -15,28 +15,37 @@ import (
 
 const iAdminChatID int64 = 726713220
 
-// ErrorReport возвращает true, если сообщение об ошибке опубликовано в логах и в Telegram, при наличии связи. Если
+type ReporterOptions struct {
+	Bot            *telegram.BotAPI
+	Locker         *sync.Mutex
+	LogFileName    string
+	LastReported   *time.Time
+	ReportInterval time.Duration
+	ReportMessage  string
+}
+
+// Reporter возвращает true, если сообщение об ошибке опубликовано в логах и в Telegram, при наличии связи. Если
 // указан интервал 0, то ошибка публикуется в любом случае. Если интервал не 0, то нужно указать ссылку на время
 // последней публикации, которое при удачной публикации изменяется на текущее.
-func ErrorReport(bot *telegram.BotAPI, reportMessage string, logFileName string, locker *sync.Mutex, interval time.Duration, lastReported ...*time.Time) bool {
-	if interval == 0 || (len(lastReported) > 0 && time.Since(*lastReported[0]) > interval) {
-		if len(lastReported) > 0 {
-			*lastReported[0] = time.Now()
+func Reporter(options ReporterOptions) bool {
+	if options.ReportInterval == 0 || !options.LastReported.IsZero() && time.Since(*options.LastReported) > options.ReportInterval {
+		if !options.LastReported.IsZero() {
+			*options.LastReported = time.Now()
 		}
 
-		if locker != nil {
-			locker.Lock()
-			defer locker.Unlock()
+		if options.Locker != nil {
+			options.Locker.Lock()
+			defer options.Locker.Unlock()
 		}
 
-		logFile, err := os.OpenFile(logFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0664)
+		logFile, err := os.OpenFile(options.LogFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0664)
 
 		if err != nil {
 			log.Print(err)
 		}
 
 		log.SetOutput(logFile)
-		log.Print(reportMessage)
+		log.Print(options.ReportMessage)
 
 		err = logFile.Close()
 
@@ -44,10 +53,10 @@ func ErrorReport(bot *telegram.BotAPI, reportMessage string, logFileName string,
 			log.Print(err)
 		}
 
-		fmt.Println(reportMessage) //nolint:forbidigo
+		fmt.Println(options.ReportMessage) //nolint:forbidigo
 
-		if bot != nil {
-			go tb.SendMessage(iAdminChatID, reportMessage, bot, false)
+		if options.Bot != nil {
+			go tb.SendMessage(iAdminChatID, options.ReportMessage, options.Bot, false)
 		}
 
 		return true
