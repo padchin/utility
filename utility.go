@@ -27,25 +27,25 @@ type ReporterOptions struct {
 // Reporter возвращает true, если сообщение об ошибке опубликовано в логах и в Telegram, при наличии связи. Если
 // указан интервал 0, то ошибка публикуется в любом случае. Если интервал не 0, то нужно указать ссылку на время
 // последней публикации, которое при удачной публикации изменяется на текущее.
-func Reporter(options ReporterOptions) bool {
-	if options.ReportInterval == 0 || !options.LastReported.IsZero() && time.Since(*options.LastReported) > options.ReportInterval {
-		if !options.LastReported.IsZero() {
-			*options.LastReported = time.Now()
+func Reporter(r ReporterOptions) bool {
+	if r.ReportInterval == 0 || !r.LastReported.IsZero() && time.Since(*r.LastReported) > r.ReportInterval {
+		if !(*r.LastReported).IsZero() {
+			*r.LastReported = time.Now()
 		}
 
-		if options.Locker != nil {
-			options.Locker.Lock()
-			defer options.Locker.Unlock()
+		if r.Locker != nil {
+			r.Locker.Lock()
+			defer r.Locker.Unlock()
 		}
 
-		logFile, err := os.OpenFile(options.LogFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0664)
+		logFile, err := os.OpenFile(r.LogFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0664)
 
 		if err != nil {
 			log.Print(err)
 		}
 
 		log.SetOutput(logFile)
-		log.Print(options.ReportMessage)
+		log.Print(r.ReportMessage)
 
 		err = logFile.Close()
 
@@ -53,10 +53,10 @@ func Reporter(options ReporterOptions) bool {
 			log.Print(err)
 		}
 
-		fmt.Println(options.ReportMessage) //nolint:forbidigo
+		fmt.Println(r.ReportMessage) //nolint:forbidigo
 
-		if options.Bot != nil {
-			go tb.SendMessage(iAdminChatID, options.ReportMessage, options.Bot, false)
+		if r.Bot != nil {
+			go tb.SendMessage(iAdminChatID, r.ReportMessage, r.Bot, false)
 		}
 
 		return true
