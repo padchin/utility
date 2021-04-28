@@ -28,10 +28,8 @@ type ReporterOptions struct {
 // указан интервал 0, то ошибка публикуется в любом случае. Если интервал не 0, то нужно указать ссылку на время
 // последней публикации, которое при удачной публикации изменяется на текущее.
 func Reporter(r ReporterOptions) bool {
-	if r.ReportInterval == 0 || !r.LastReported.IsZero() && time.Since(*r.LastReported) > r.ReportInterval {
-		if !(*r.LastReported).IsZero() {
-			*r.LastReported = time.Now()
-		}
+	if r.ReportInterval == 0 || time.Since(*r.LastReported) > r.ReportInterval {
+		*r.LastReported = time.Now()
 
 		if r.Locker != nil {
 			r.Locker.Lock()
