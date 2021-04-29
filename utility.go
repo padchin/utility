@@ -107,6 +107,11 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 	for scanner.Scan() {
 		// date format 2021/04/24 20:39:03
 		line := scanner.Text()
+
+		if len(line) < 20 {
+			continue
+		}
+
 		dtOfLine, err := time.Parse("2006/01/02 15:04:05", line[:19])
 
 		if err != nil {
