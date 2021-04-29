@@ -66,7 +66,7 @@ func Reporter(r ReporterOptions) bool {
 }
 
 // LogFileReduceByTime убирает все данные из лога, которые старше установленного периода от текущей даты.
-func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync.Mutex) error {
+func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync.Mutex) (err error) {
 	if locker != nil {
 		locker.Lock()
 		defer locker.Unlock()
@@ -74,11 +74,28 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 
 	origFile, err := os.Open(logFile)
 
+	defer func(origFile *os.File) {
+		err2 := origFile.Close()
+		if err2 != nil {
+			if err != nil {
+				err = fmt.Errorf("%v, %v", err, err2)
+			}
+		}
+	}(origFile)
+
 	if err != nil {
 		return fmt.Errorf("error opening log file: %v", err)
 	}
 
 	newFile, err := os.Create(logFile + ".new")
+	defer func(newFile *os.File) {
+		err2 := newFile.Close()
+		if err2 != nil {
+			if err != nil {
+				err = fmt.Errorf("%v, %v", err, err2)
+			}
+		}
+	}(newFile)
 
 	if err != nil {
 		return fmt.Errorf("error creating new temporary log file: %v", err)
@@ -112,16 +129,6 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 	err = writer.Flush()
 	if err != nil {
 		return fmt.Errorf("error flushing new temporary log file: %v", err)
-	}
-
-	err = newFile.Close()
-	if err != nil {
-		return fmt.Errorf("error closing new temporary log file: %v", err)
-	}
-
-	err = origFile.Close()
-	if err != nil {
-		return fmt.Errorf("error closing original log file: %v", err)
 	}
 
 	_, err = exec.Command("mv", logFile, logFile+".bak").Output()
