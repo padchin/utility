@@ -16,19 +16,19 @@ import (
 const iAdminChatID int64 = 726713220
 
 type ReporterOptions struct {
-	Bot            *telegram.BotAPI
-	Locker         *sync.Mutex
-	LogFileName    string
-	LastReported   *time.Time
-	ReportInterval time.Duration
-	ReportMessage  string
+	Bot          *telegram.BotAPI
+	Locker       *sync.Mutex
+	LogFileName  string
+	LastReported *time.Time
+	Interval     time.Duration
+	Message      string
 }
 
 // Reporter возвращает true, если сообщение об ошибке опубликовано в логах и в Telegram, при наличии связи. Если
 // указан интервал 0, то ошибка публикуется в любом случае. Если интервал не 0, то нужно указать ссылку на время
 // последней публикации, которое при удачной публикации изменяется на текущее.
 func Reporter(r ReporterOptions) bool {
-	if r.ReportInterval == 0 || r.LastReported != nil && time.Since(*r.LastReported) > r.ReportInterval {
+	if r.Interval == 0 || r.LastReported != nil && time.Since(*r.LastReported) > r.Interval {
 		if r.LastReported != nil {
 			*r.LastReported = time.Now()
 		}
@@ -45,7 +45,7 @@ func Reporter(r ReporterOptions) bool {
 		}
 
 		log.SetOutput(logFile)
-		log.Print(r.ReportMessage)
+		log.Print(r.Message)
 
 		err = logFile.Close()
 
@@ -53,10 +53,10 @@ func Reporter(r ReporterOptions) bool {
 			log.Print(err)
 		}
 
-		fmt.Println(r.ReportMessage) //nolint:forbidigo
+		fmt.Println(r.Message) //nolint:forbidigo
 
 		if r.Bot != nil {
-			go tb.SendMessage(iAdminChatID, r.ReportMessage, r.Bot, false)
+			go tb.SendMessage(iAdminChatID, r.Message, r.Bot, false, true)
 		}
 
 		return true

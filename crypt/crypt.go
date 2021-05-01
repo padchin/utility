@@ -7,12 +7,13 @@ import (
 	crypto_rand "crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
 	"io"
 	"io/ioutil"
 	math_rand "math/rand"
 	"os"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // ComputeMD5 вычисляет контрольную сумму MD5 файла по указанному пути.
@@ -142,7 +143,6 @@ func Encrypt(stringToEncrypt string, keyString string) (encryptedString string) 
 }
 
 func Decrypt(encryptedString string, keyString string) (decryptedString string) {
-
 	key, _ := hex.DecodeString(keyString)
 	enc, _ := hex.DecodeString(encryptedString)
 
@@ -174,13 +174,12 @@ func Decrypt(encryptedString string, keyString string) (decryptedString string) 
 }
 
 func main() {
-
-	bytes := make([]byte, 32) //generate a random 32 byte key for AES-256
+	bytes := make([]byte, 32) // generate a random 32 byte key for AES-256
 	if _, err := crypto_rand.Read(bytes); err != nil {
 		panic(err.Error())
 	}
 
-	key := hex.EncodeToString(bytes) //encode key in bytes to string and keep as secret, put in a vault
+	key := hex.EncodeToString(bytes) // encode key in bytes to string and keep as secret, put in a vault
 	fmt.Printf("key to Encrypt/Decrypt : %s\n", key)
 
 	encrypted := Encrypt("Hello Encrypt", key)
