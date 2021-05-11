@@ -14,9 +14,9 @@ func LocalTimeFormatFromUnix(unixTime int, format ...string) string {
 
 	if len(format) > 0 {
 		return t.Format(format[0])
-	} else {
-		return t.Format("02.01.2006 15:04:05")
 	}
+
+	return t.Format("02.01.2006 15:04:05")
 }
 
 // LocalTimeFormatFromUnixNano возвращает форматированную строку в формате 02.01.2006 15:04:05 без долей секунды,
@@ -29,9 +29,9 @@ func LocalTimeFormatFromUnixNano(unixTime int, format ...string) string {
 
 	if len(format) > 0 {
 		return t.Format(format[0])
-	} else {
-		return t.Format("02.01.2006 15:04:05")
 	}
+
+	return t.Format("02.01.2006 15:04:05")
 }
 
 // LocalTimeFormat возвращает форматированную строку текущего времени в формате 02.01.2006 15:04:05,
@@ -44,7 +44,7 @@ func LocalTimeFormat(format ...string) string {
 
 	if len(format) > 0 {
 		return t.Format(format[0])
-	} else {
-		return t.Format("02.01.2006 15:04:05")
 	}
+
+	return t.Format("02.01.2006 15:04:05")
 }
