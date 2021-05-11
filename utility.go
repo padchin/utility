@@ -74,28 +74,11 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 
 	origFile, err := os.Open(logFile)
 
-	defer func(origFile *os.File) {
-		err2 := origFile.Close()
-		if err2 != nil {
-			if err != nil {
-				err = fmt.Errorf("%v, %v", err, err2)
-			}
-		}
-	}(origFile)
-
 	if err != nil {
 		return fmt.Errorf("error opening log file: %v", err)
 	}
 
 	newFile, err := os.Create(logFile + ".new")
-	defer func(newFile *os.File) {
-		err2 := newFile.Close()
-		if err2 != nil {
-			if err != nil {
-				err = fmt.Errorf("%v, %v", err, err2)
-			}
-		}
-	}(newFile)
 
 	if err != nil {
 		return fmt.Errorf("error creating new temporary log file: %v", err)
@@ -135,6 +118,13 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 	if err != nil {
 		return fmt.Errorf("error flushing new temporary log file: %v", err)
 	}
+
+	err = newFile.Close()
+	if err != nil {
+		return fmt.Errorf("error closing new temporary log file: %v", err)
+	}
+
+	_ = origFile.Close()
 
 	_, err = exec.Command("mv", logFile, logFile+".bak").Output()
 

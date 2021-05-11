@@ -29,3 +29,10 @@ func LocalTimeFormatFromUnixNano(unixTime int, format ...string) string {
 		return t.Format("02.01.2006 15:04:05")
 	}
 }
+
+// LocalTimeFormat возвращает форматированную строку текущего времени
+func LocalTimeFormat() string {
+	loc, _ := time.LoadLocation("Europe/Moscow")
+	time.Local = loc
+	return time.Now().Local().Format("02.01.2006 15:04:05")
+}
