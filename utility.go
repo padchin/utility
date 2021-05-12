@@ -71,6 +71,7 @@ func Reporter(r ReporterOptions) (err error) {
 			}()
 		}
 	}
+
 	return nil
 }
 

@@ -4,25 +4,31 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
-	crypto_rand "crypto/rand"
+	cryptorand "crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
-	math_rand "math/rand"
+	mathrand "math/rand"
 	"os"
 	"time"
 
+	"go.uber.org/multierr"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // ComputeMD5 вычисляет контрольную сумму MD5 файла по указанному пути.
-func ComputeMD5(path string) (string, error) {
+func ComputeMD5(path string) (md5String string, err error) {
 	f, err := os.Open(path)
+
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("ошибка открытия файла: %v", err)
 	}
-	defer f.Close()
+
+	defer func(f *os.File) {
+		multierr.AppendInto(&err, f.Close())
+	}(f)
+
 	h := md5.New()
 	if _, err = io.Copy(h, f); err != nil {
 		return "", err
@@ -76,11 +82,12 @@ func GeneratePasswordAndStoreNewHash() ([]byte, error) {
 func passPhraseGen(iPhraseLength int) []byte {
 	var bytePassPhrase []byte
 
-	math_rand.Seed(time.Now().UnixNano())
+	mathrand.Seed(time.Now().UnixNano())
 
 	for i := 1; i <= iPhraseLength; i++ {
 	Gen:
-		uiRandNumber := uint8(math_rand.Intn(125-33) + 33)
+		uiRandNumber := uint8(mathrand.Intn(125-33) + 33)
+
 		switch uiRandNumber {
 		// убираются некоторые неудобные символы
 		case 34, 39, 44, 45, 46, 94, 96, 124:
@@ -106,13 +113,12 @@ func secretHashRead() ([]byte, error) {
 
 // secretHashWrite записывает хэш в файл secret текущего каталога.
 func secretHashWrite(secret *[]byte) error {
-	errWrite := ioutil.WriteFile("secret", *secret, 0600)
+	err := ioutil.WriteFile("secret", *secret, 0600)
 
-	return errWrite
+	return err
 }
 
 func Encrypt(stringToEncrypt string, keyString string) (encryptedString string) {
-
 	// Since the key is in string, we need to convert decode it to bytes
 	key, _ := hex.DecodeString(keyString)
 	plaintext := []byte(stringToEncrypt)
@@ -132,13 +138,15 @@ func Encrypt(stringToEncrypt string, keyString string) (encryptedString string) 
 
 	// Create a nonce. Nonce should be from GCM
 	nonce := make([]byte, aesGCM.NonceSize())
-	if _, err = io.ReadFull(crypto_rand.Reader, nonce); err != nil {
+	if _, err = io.ReadFull(cryptorand.Reader, nonce); err != nil {
 		panic(err.Error())
 	}
 
 	// Encrypt the data using aesGCM.Seal
-	//Since we don't want to save the nonce somewhere else in this case, we add it as a prefix to the encrypted data. The first nonce argument in Seal is the prefix.
+	// Since we don't want to save the nonce somewhere else in this case, we add it as a prefix to the encrypted data.
+	// The first nonce argument in Seal is the prefix.
 	ciphertext := aesGCM.Seal(nonce, nonce, plaintext, nil)
+
 	return fmt.Sprintf("%x", ciphertext)
 }
 
