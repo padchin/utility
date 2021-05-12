@@ -31,10 +31,6 @@ type ReporterOptions struct {
 // ссылку на время последней публикации, которое при удачной публикации изменяется на текущее.
 func Reporter(r ReporterOptions) (err error) {
 	if r.Interval == 0 || r.LastReported != nil && time.Since(*r.LastReported) > r.Interval {
-		if r.LastReported != nil {
-			*r.LastReported = time.Now()
-		}
-
 		if r.Locker != nil {
 			r.Locker.Lock()
 			defer r.Locker.Unlock()
@@ -69,6 +65,9 @@ func Reporter(r ReporterOptions) (err error) {
 					}
 				}
 			}()
+		}
+		if r.LastReported != nil {
+			*r.LastReported = time.Now()
 		}
 	}
 
