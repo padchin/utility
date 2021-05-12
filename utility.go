@@ -16,6 +16,8 @@ import (
 const iAdminChatID int64 = 726713220
 
 type ReporterOptions struct {
+	// ChatIDs содержит массив из идентификаторов пользователей Telegram, которым будет отправлено уведомление.
+	ChatIDs      []int64
 	Bot          *telegram.BotAPI
 	Locker       *sync.Mutex
 	LogFileName  string
@@ -24,10 +26,10 @@ type ReporterOptions struct {
 	Message      string
 }
 
-// Reporter возвращает true, если сообщение об ошибке опубликовано в логах и в Telegram, при наличии связи. Если
-// указан интервал 0, то ошибка публикуется в любом случае. Если интервал не 0, то нужно указать ссылку на время
-// последней публикации, которое при удачной публикации изменяется на текущее.
-func Reporter(r ReporterOptions) bool {
+// Reporter публикует сообщение об ошибке в логах и в Telegram (список пользователей указывается в параметрах), при
+// наличии связи. Если указан интервал 0, то ошибка публикуется в любом случае. Если интервал не 0, то нужно указать
+// ссылку на время последней публикации, которое при удачной публикации изменяется на текущее.
+func Reporter(r ReporterOptions) (err error) {
 	if r.Interval == 0 || r.LastReported != nil && time.Since(*r.LastReported) > r.Interval {
 		if r.LastReported != nil {
 			*r.LastReported = time.Now()
@@ -42,6 +44,7 @@ func Reporter(r ReporterOptions) bool {
 
 		if err != nil {
 			log.Print(err)
+			return fmt.Errorf("невозможно открыть файл: %v", err)
 		}
 
 		log.SetOutput(logFile)
@@ -51,18 +54,24 @@ func Reporter(r ReporterOptions) bool {
 
 		if err != nil {
 			log.Print(err)
+			return fmt.Errorf("невозможно закрыть файл: %v", err)
 		}
 
 		fmt.Println(r.Message) //nolint:forbidigo
 
 		if r.Bot != nil {
-			go tb.SendMessage(iAdminChatID, r.Message, r.Bot, false, true)
+			go func() {
+				if len(r.ChatIDs) == 0 {
+					tb.SendMessage(iAdminChatID, r.Message, r.Bot, false, true)
+				} else {
+					for _, chat := range r.ChatIDs {
+						tb.SendMessage(chat, r.Message, r.Bot, false, true)
+					}
+				}
+			}()
 		}
-
-		return true
 	}
-
-	return false
+	return nil
 }
 
 // LogFileReduceByTime убирает все данные из лога, которые старше установленного периода от текущей даты.
@@ -74,28 +83,11 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 
 	origFile, err := os.Open(logFile)
 
-	defer func(origFile *os.File) {
-		err2 := origFile.Close()
-		if err2 != nil {
-			if err != nil {
-				err = fmt.Errorf("%v, %v", err, err2)
-			}
-		}
-	}(origFile)
-
 	if err != nil {
 		return fmt.Errorf("error opening log file: %v", err)
 	}
 
 	newFile, err := os.Create(logFile + ".new")
-	defer func(newFile *os.File) {
-		err2 := newFile.Close()
-		if err2 != nil {
-			if err != nil {
-				err = fmt.Errorf("%v, %v", err, err2)
-			}
-		}
-	}(newFile)
 
 	if err != nil {
 		return fmt.Errorf("error creating new temporary log file: %v", err)
@@ -135,6 +127,13 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 	if err != nil {
 		return fmt.Errorf("error flushing new temporary log file: %v", err)
 	}
+
+	err = newFile.Close()
+	if err != nil {
+		return fmt.Errorf("error closing new temporary log file: %v", err)
+	}
+
+	_ = origFile.Close()
 
 	_, err = exec.Command("mv", logFile, logFile+".bak").Output()
 

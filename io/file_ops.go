@@ -4,19 +4,20 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-// GetFilesByPath возвращает список файлов рекурсивно или нет с указанными расширениями или все не являющихся каталогами
+// GetFilesByPath возвращает список файлов (не каталогов). Если указан абсолютный путь, то будет возвращен список файлов
+// с абсолютными путями.
 func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string, error) {
 	var asFilesList []string
 	var err error
 
-	// проверяется если указанный путь является абсолютным, то используется он для построения списка
+	// если указанный путь является абсолютным, то используется он для построения списка
 	sCurrentPath := ""
+
 	if !filepath.IsAbs(path) {
 		sCurrentPath, err = os.Getwd()
 		if err != nil {
@@ -27,8 +28,6 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string
 	sPath, err := filepath.Abs(filepath.Dir(path))
 
 	if err != nil {
-		log.Println(err)
-
 		return nil, err
 	}
 
@@ -53,15 +52,11 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string
 				return nil
 			})
 		if err2 != nil {
-			log.Println(err2)
-
 			return nil, err2
 		}
 	} else {
 		files, err2 := os.ReadDir(filepath.Join(sCurrentPath, path))
 		if err2 != nil {
-			log.Println(err)
-
 			return nil, err2
 		}
 		for _, f := range files {
