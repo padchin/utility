@@ -17,7 +17,7 @@ const iAdminChatID int64 = 726713220
 
 type ReporterOptions struct {
 	// ChatIDs содержит массив из идентификаторов пользователей Telegram, которым будет отправлено уведомление.
-	ChatIDs      []int64
+	ChatIDs      *[]int64
 	Bot          *telegram.BotAPI
 	Locker       *sync.Mutex
 	LogFileName  string
@@ -26,9 +26,10 @@ type ReporterOptions struct {
 	Message      string
 }
 
-// Reporter публикует сообщение об ошибке в логах и в Telegram (список пользователей указывается в параметрах), при
-// наличии связи. Если указан интервал 0, то ошибка публикуется в любом случае. Если интервал не 0, то нужно указать
-// ссылку на время последней публикации, которое при удачной публикации изменяется на текущее.
+// Reporter публикует сообщение в логах и в Telegram (список пользователей указывается в параметрах), при
+// наличии экземпляра бота. Если указан интервал 0, то сообщение публикуется в любом случае. Если интервал не 0, то
+// нужно указать ссылку на время последней публикации, которое при удачной в публикации в логах изменяется на текущее. В
+// этом случае сообщение публикуется не чаще, чем через интервал, указанный в параметрах.
 func Reporter(r ReporterOptions) (err error) {
 	if r.Interval != 0 && r.LastReported == nil {
 		return fmt.Errorf("не указана ссылка на время последней публикации")
@@ -61,10 +62,10 @@ func Reporter(r ReporterOptions) (err error) {
 
 		if r.Bot != nil {
 			go func() {
-				if len(r.ChatIDs) == 0 {
+				if len(*r.ChatIDs) == 0 {
 					tb.SendMessage(iAdminChatID, r.Message, r.Bot, false, true)
 				} else {
-					for _, chat := range r.ChatIDs {
+					for _, chat := range *r.ChatIDs {
 						tb.SendMessage(chat, r.Message, r.Bot, false, true)
 					}
 				}
