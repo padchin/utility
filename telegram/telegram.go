@@ -76,6 +76,7 @@ func DeletePreviousMessages(userID int64, bot *telegram.BotAPI, isPassphrase boo
 	} else {
 		_ = loadMessageIDPass(&p)
 	}
+
 	if !isPassphrase {
 		if len(m[sUserID]) > 0 {
 			// исключаем активную клавиатуру из списка на удаление
