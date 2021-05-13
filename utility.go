@@ -30,6 +30,10 @@ type ReporterOptions struct {
 // наличии связи. Если указан интервал 0, то ошибка публикуется в любом случае. Если интервал не 0, то нужно указать
 // ссылку на время последней публикации, которое при удачной публикации изменяется на текущее.
 func Reporter(r ReporterOptions) (err error) {
+	if r.Interval != 0 && r.LastReported == nil {
+		return fmt.Errorf("не указана ссылка на время последней публикации")
+	}
+
 	if r.Interval == 0 || r.LastReported != nil && time.Since(*r.LastReported) > r.Interval {
 		if r.Locker != nil {
 			r.Locker.Lock()
@@ -66,6 +70,7 @@ func Reporter(r ReporterOptions) (err error) {
 				}
 			}()
 		}
+
 		if r.LastReported != nil {
 			*r.LastReported = time.Now()
 		}
@@ -96,6 +101,7 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 	writer := bufio.NewWriter(newFile)
 
 	scanner := bufio.NewScanner(origFile)
+
 	for scanner.Scan() {
 		// date format 2021/04/24 20:39:03
 		line := scanner.Text()

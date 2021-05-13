@@ -32,7 +32,7 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string
 	}
 
 	if recursive {
-		err2 := filepath.Walk(sPath,
+		err = filepath.Walk(sPath,
 			func(path string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
@@ -51,14 +51,16 @@ func GetFilesByPath(path string, recursive bool, extensions ...string) ([]string
 
 				return nil
 			})
-		if err2 != nil {
-			return nil, err2
+		if err != nil {
+			return nil, err
 		}
 	} else {
-		files, err2 := os.ReadDir(filepath.Join(sCurrentPath, path))
-		if err2 != nil {
-			return nil, err2
+		files, err := os.ReadDir(filepath.Join(sCurrentPath, path))
+
+		if err != nil {
+			return nil, err
 		}
+
 		for _, f := range files {
 			if len(extensions) > 0 {
 				for _, ext := range extensions {
