@@ -62,7 +62,8 @@ func Reporter(r ReporterOptions) (err error) {
 
 		if r.Bot != nil {
 			go func() {
-				if len(*r.ChatIDs) == 0 {
+				if r.ChatIDs == nil || len(*r.ChatIDs) == 0 {
+					// если не указан список пользователей, отправляется только админу
 					tb.SendMessage(iAdminChatID, r.Message, r.Bot, false, true)
 				} else {
 					for _, chat := range *r.ChatIDs {
