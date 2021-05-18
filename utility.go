@@ -132,24 +132,26 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 	}
 
 	err = writer.Flush()
+
 	if err != nil {
 		return fmt.Errorf("error flushing new temporary log file: %v", err)
 	}
 
 	err = newFile.Close()
+
 	if err != nil {
 		return fmt.Errorf("error closing new temporary log file: %v", err)
 	}
 
 	_ = origFile.Close()
 
-	_, err = exec.Command("mv", logFile, logFile+".bak").Output()
+	err = exec.Command("mv", logFile, logFile+".bak").Run()
 
 	if err != nil {
 		return fmt.Errorf("error creating backup of original log file: %v", err)
 	}
 
-	_, err = exec.Command("mv", logFile+".new", logFile).Output()
+	err = exec.Command("mv", logFile+".new", logFile).Run()
 
 	if err != nil {
 		return fmt.Errorf("error moving new log file to original log file: %v", err)

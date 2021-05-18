@@ -1,13 +1,14 @@
 package telegram
 
 import (
+	"fmt"
+	"strconv"
+
 	telegram "github.com/padchin/telegram-bot-api"
 	"github.com/padchin/utility/io"
-	"log"
-	"strconv"
 )
 
-const csMarkdown = "markdown"
+const markdown = "markdown"
 
 type TButton struct {
 	Text         string
@@ -19,49 +20,56 @@ type Keyboard telegram.InlineKeyboardMarkup
 // AddButtonsRow метод для создания одного ряда, состоящего из одной или нескольких кнопок.
 func (k *Keyboard) AddButtonsRow(buttons ...TButton) {
 	var row []telegram.InlineKeyboardButton
+
 	for _, b := range buttons {
 		row = append(row, telegram.NewInlineKeyboardButtonData(
 			b.Text,
 			b.CallbackData,
 		))
 	}
+
 	(*k).InlineKeyboard = append((*k).InlineKeyboard, row)
 }
 
 func loadMessageID(obj *map[string][]int) error {
 	err := io.JSONLoad(obj, "message_id.json")
+
 	if err != nil {
-		log.Printf("loadMessageID error: %v", err)
-		return err
+		return fmt.Errorf("loadMessageID error: %v", err)
 	}
+
 	return nil
 }
 
 func loadMessageIDPass(obj *[]int) error {
 	err := io.JSONLoad(obj, "message_id_pass.json")
+
 	if err != nil {
-		log.Printf("loadMessageID error: %v", err)
 		*obj = []int{}
-		return err
+
+		return fmt.Errorf("loadMessageID error: %v", err)
 	}
+
 	return nil
 }
 
 func dumpMessageIDPass(obj *[]int) error {
 	err := io.JSONDump(obj, "message_id_pass.json")
+
 	if err != nil {
-		log.Printf("dumpMessageIDPass error: %v", err)
-		return err
+		return fmt.Errorf("dumpMessageIDPass error: %v", err)
 	}
+
 	return nil
 }
 
 func dumpMessageID(obj *map[string][]int) error {
 	err := io.JSONDump(obj, "message_id.json")
+
 	if err != nil {
-		log.Printf("dumpMessageID error: %v", err)
-		return err
+		return fmt.Errorf("dumpMessageID error: %v", err)
 	}
+
 	return nil
 }
 
@@ -111,13 +119,15 @@ func EditMessageWithMarkup(iUserID int64, iMessageID int, sMessage string, bot *
 			DeletePreviousMessages(iUserID, bot, false)
 		}
 	}
+
 	msg := telegram.NewEditMessageTextAndMarkup(
 		iUserID,
 		iMessageID,
 		sMessage,
 		markup,
 	)
-	msg.ParseMode = csMarkdown
+
+	msg.ParseMode = markdown
 	_, _ = bot.Send(msg)
 }
 
@@ -128,13 +138,14 @@ func SendMessageWithMarkup(iUserID int64, message string, bot *telegram.BotAPI, 
 	if deletePrevious {
 		DeletePreviousMessages(iUserID, bot, false)
 	}
+
 	sUserID := strconv.Itoa(int(iUserID))
 	msg := telegram.NewMessage(
 		iUserID,
 		message,
 	)
 	msg.ReplyMarkup = markup
-	msg.ParseMode = csMarkdown
+	msg.ParseMode = markdown
 	reply, _ := (*bot).Send(msg)
 	storeKeyboardMessageID(iUserID, reply.MessageID)
 	UpdateMIArrays(sUserID, reply.MessageID, false)
@@ -147,18 +158,21 @@ func SendMessage(iUserID int64, sMessage string, bot *telegram.BotAPI, deletePre
 	if deletePrevious {
 		DeletePreviousMessages(iUserID, bot, false)
 	}
+
 	sUserID := strconv.Itoa(int(iUserID))
 	msg := telegram.NewMessage(
 		iUserID,
 		sMessage,
 	)
-	msg.ParseMode = csMarkdown
+	msg.ParseMode = markdown
 	reply, _ := bot.Send(msg)
+
 	if len(persist) > 0 {
 		if persist[0] {
 			return
 		}
 	}
+
 	UpdateMIArrays(sUserID, reply.MessageID, false)
 }
 
@@ -173,11 +187,13 @@ func UpdateMIArrays(userIDKey string, messageID int, isPassphrase bool) {
 	} else {
 		_ = loadMessageIDPass(&p)
 	}
+
 	if !isPassphrase {
 		m[userIDKey] = append(m[userIDKey], messageID)
 	} else {
 		p = append(p, messageID)
 	}
+
 	if !isPassphrase {
 		_ = dumpMessageID(&m)
 	} else {
@@ -191,7 +207,6 @@ func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 	m[iUserID] = iMessageID
 	err := io.JSONDump(&m, "message_id_kb.json")
 	if err != nil {
-		log.Printf("%v", err)
 		return
 	}
 }
@@ -201,7 +216,6 @@ func GetKeyboardMessageID(iUserID int64) int {
 	m := make(map[int64]int)
 	err := io.JSONLoad(&m, "message_id_kb.json")
 	if err != nil {
-		log.Printf("%v", err)
 		return 0
 	}
 	return m[iUserID]
