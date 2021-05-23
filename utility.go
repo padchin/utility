@@ -2,6 +2,7 @@ package utility
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -14,6 +15,8 @@ import (
 )
 
 const iAdminChatID int64 = 726713220
+
+var errNotPublished = errors.New("not published")
 
 type ReporterOptions struct {
 	// ChatIDs содержит массив из идентификаторов пользователей Telegram, которым будет отправлено уведомление.
@@ -80,7 +83,7 @@ func Reporter(r ReporterOptions) (err error) {
 		return nil
 	}
 
-	return fmt.Errorf("not published")
+	return errNotPublished
 }
 
 // LogFileReduceByTime убирает все данные из лога, которые старше установленного периода от текущей даты.
