@@ -76,9 +76,11 @@ func Reporter(r ReporterOptions) (err error) {
 		if r.LastReported != nil {
 			*r.LastReported = time.Now()
 		}
+
+		return nil
 	}
 
-	return nil
+	return fmt.Errorf("not published")
 }
 
 // LogFileReduceByTime убирает все данные из лога, которые старше установленного периода от текущей даты.
