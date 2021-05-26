@@ -16,7 +16,9 @@ import (
 
 const iAdminChatID int64 = 726713220
 
+// ErrNotPublished возвращается, если сообщение не опубликовано.
 var ErrNotPublished = errors.New("сообщение не опубликовано")
+var ErrTimeNotSpecified = errors.New("не указана ссылка на время последней публикации")
 
 type ReporterOptions struct {
 	// ChatIDs содержит массив из идентификаторов пользователей Telegram, которым будет отправлено уведомление.
@@ -33,9 +35,9 @@ type ReporterOptions struct {
 // наличии экземпляра бота. Если указан интервал 0, то сообщение публикуется в любом случае. Если интервал не 0, то
 // нужно указать ссылку на время последней публикации, которое при удачной в публикации в логах изменяется на текущее. В
 // этом случае сообщение публикуется не чаще, чем через интервал, указанный в параметрах.
-func Reporter(r ReporterOptions) (err error) {
+func Reporter(r ReporterOptions) error {
 	if r.Interval != 0 && r.LastReported == nil {
-		return fmt.Errorf("не указана ссылка на время последней публикации")
+		return ErrTimeNotSpecified
 	}
 
 	if r.Interval == 0 || r.LastReported != nil && time.Since(*r.LastReported) > r.Interval {
