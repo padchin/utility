@@ -16,7 +16,7 @@ import (
 
 const iAdminChatID int64 = 726713220
 
-var ErrNotPublished = errors.New("not published")
+var ErrNotPublished = errors.New("сообщение не опубликовано")
 
 type ReporterOptions struct {
 	// ChatIDs содержит массив из идентификаторов пользователей Telegram, которым будет отправлено уведомление.
@@ -44,21 +44,15 @@ func Reporter(r ReporterOptions) (err error) {
 			defer r.Locker.Unlock()
 		}
 
-		logFile, err := os.OpenFile(r.LogFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0664)
+		if len(r.LogFileName) > 0 {
+			logFile, err := os.OpenFile(r.LogFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0664)
 
-		if err != nil {
-			log.Print(err)
-			return fmt.Errorf("невозможно открыть файл: %v", err)
-		}
+			if err == nil {
+				log.SetOutput(logFile)
+				log.Print(r.Message)
 
-		log.SetOutput(logFile)
-		log.Print(r.Message)
-
-		err = logFile.Close()
-
-		if err != nil {
-			log.Print(err)
-			return fmt.Errorf("невозможно закрыть файл: %v", err)
+				_ = logFile.Close()
+			}
 		}
 
 		fmt.Println(r.Message) //nolint:forbidigo
