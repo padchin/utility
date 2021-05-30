@@ -65,16 +65,14 @@ func Reporter(r ReporterOptions) error {
 		fmt.Println(r.Message) //nolint:forbidigo
 
 		if r.Bot != nil {
-			go func() {
-				if r.ChatIDs == nil || len(*r.ChatIDs) == 0 {
-					// если не указан список пользователей, отправляется только админу
-					tb.SendMessage(iAdminChatID, r.Message, r.Bot, false, true)
-				} else {
-					for _, chat := range *r.ChatIDs {
-						tb.SendMessage(chat, r.Message, r.Bot, false, true)
-					}
+			if r.ChatIDs == nil || len(*r.ChatIDs) == 0 {
+				// если не указан список пользователей, отправляется только админу
+				tb.SendMessage(iAdminChatID, r.Message, r.Bot, false, true)
+			} else {
+				for _, chat := range *r.ChatIDs {
+					tb.SendMessage(chat, r.Message, r.Bot, false, true)
 				}
-			}()
+			}
 		}
 
 		if r.LastReported != nil {
