@@ -22,13 +22,18 @@ var ErrTimeNotSpecified = errors.New("не указана ссылка на вр
 
 type ReporterOptions struct {
 	// ChatIDs содержит массив из идентификаторов пользователей Telegram, которым будет отправлено уведомление.
-	ChatIDs      *[]int64
-	Bot          *telegram.BotAPI
-	Locker       *sync.Mutex
-	LogFileName  string
+	ChatIDs *[]int64
+	Bot     *telegram.BotAPI
+	// Locker для предотвращения одновременной записи в лог.
+	Locker *sync.Mutex
+	// Имя файла лога включая полный путь при необходимости.
+	LogFileName string
+	// Указатель на время последней публикации.
 	LastReported *time.Time
-	Interval     time.Duration
-	Message      string
+	// Интервал между публикациями.
+	Interval time.Duration
+	// Текст сообщения для публикации.
+	Message string
 }
 
 // Reporter публикует сообщение в логах и в Telegram (список пользователей указывается в параметрах), при
