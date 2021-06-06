@@ -192,6 +192,7 @@ func PanicReporter(o ReporterOptions) bool {
 		})
 
 		_ = file_operations.CopyFile(o.LogFileName, o.LogFileName+".panic")
+
 		return true
 	}
 
