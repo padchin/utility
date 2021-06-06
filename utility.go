@@ -4,11 +4,9 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/padchin/utility/file_operations"
 	"log"
 	"os"
 	"os/exec"
-	"runtime"
 	"sync"
 	"time"
 
@@ -164,37 +162,4 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 	}
 
 	return nil
-}
-
-func PanicReporter(o ReporterOptions) bool {
-	if i := recover(); i != nil {
-		var buf [4096]byte
-
-		n := runtime.Stack(buf[:], false)
-
-		_ = Reporter(ReporterOptions{
-			ChatIDs:      nil,
-			Bot:          nil,
-			Locker:       o.Locker,
-			LogFileName:  o.LogFileName,
-			LastReported: nil,
-			Interval:     0,
-			Message:      fmt.Sprintf("%v\n%s", i, string(buf[:n])),
-		})
-		_ = Reporter(ReporterOptions{
-			ChatIDs:      nil,
-			Bot:          o.Bot,
-			Locker:       nil,
-			LogFileName:  "",
-			LastReported: nil,
-			Interval:     0,
-			Message:      fmt.Sprintf("Panic: [%v]. Подробности в файле %s.panic", i, o.LogFileName),
-		})
-
-		_ = file_operations.CopyFile(o.LogFileName, o.LogFileName+".panic")
-
-		return true
-	}
-
-	return false
 }
