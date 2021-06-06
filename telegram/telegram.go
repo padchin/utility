@@ -2,10 +2,10 @@ package telegram
 
 import (
 	"fmt"
+	"github.com/padchin/utility/file_operations"
 	"strconv"
 
 	telegram "github.com/padchin/telegram-bot-api"
-	"github.com/padchin/utility/io"
 )
 
 const markdown = "markdown"
@@ -32,7 +32,7 @@ func (k *Keyboard) AddButtonsRow(buttons ...TButton) {
 }
 
 func loadMessageID(obj *map[string][]int) error {
-	err := io.JSONLoad(obj, "message_id.json")
+	err := file_operations.JSONLoad(obj, "message_id.json")
 
 	if err != nil {
 		return fmt.Errorf("loadMessageID error: %v", err)
@@ -42,7 +42,7 @@ func loadMessageID(obj *map[string][]int) error {
 }
 
 func loadMessageIDPass(obj *[]int) error {
-	err := io.JSONLoad(obj, "message_id_pass.json")
+	err := file_operations.JSONLoad(obj, "message_id_pass.json")
 
 	if err != nil {
 		*obj = []int{}
@@ -54,7 +54,7 @@ func loadMessageIDPass(obj *[]int) error {
 }
 
 func dumpMessageIDPass(obj *[]int) error {
-	err := io.JSONDump(obj, "message_id_pass.json")
+	err := file_operations.JSONDump(obj, "message_id_pass.json")
 
 	if err != nil {
 		return fmt.Errorf("dumpMessageIDPass error: %v", err)
@@ -64,7 +64,7 @@ func dumpMessageIDPass(obj *[]int) error {
 }
 
 func dumpMessageID(obj *map[string][]int) error {
-	err := io.JSONDump(obj, "message_id.json")
+	err := file_operations.JSONDump(obj, "message_id.json")
 
 	if err != nil {
 		return fmt.Errorf("dumpMessageID error: %v", err)
@@ -203,9 +203,9 @@ func UpdateMIArrays(userIDKey string, messageID int, isPassphrase bool) {
 
 func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 	m := make(map[int64]int)
-	_ = io.JSONLoad(&m, "message_id_kb.json")
+	_ = file_operations.JSONLoad(&m, "message_id_kb.json")
 	m[iUserID] = iMessageID
-	err := io.JSONDump(&m, "message_id_kb.json")
+	err := file_operations.JSONDump(&m, "message_id_kb.json")
 	if err != nil {
 		return
 	}
@@ -214,7 +214,7 @@ func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 // GetKeyboardMessageID возвращает messageID последней выведенной клавиатуры для редактирования.
 func GetKeyboardMessageID(iUserID int64) int {
 	m := make(map[int64]int)
-	err := io.JSONLoad(&m, "message_id_kb.json")
+	err := file_operations.JSONLoad(&m, "message_id_kb.json")
 	if err != nil {
 		return 0
 	}

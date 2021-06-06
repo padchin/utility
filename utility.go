@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/padchin/utility/io"
+	"github.com/padchin/utility/file_operations"
 	"log"
 	"os"
 	"os/exec"
