@@ -36,8 +36,6 @@ type ReporterOptions struct {
 	Interval time.Duration
 	// Текст сообщения для публикации.
 	Message string
-	// Ссылка на функцию очистки и выхода
-	Cleanup *func()
 }
 
 // Reporter публикует сообщение в логах и в Telegram (список пользователей указывается в параметрах), при
