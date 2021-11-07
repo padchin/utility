@@ -8,7 +8,12 @@ import (
 	telegram "github.com/padchin/telegram-bot-api"
 )
 
-const markdown = "markdown"
+const (
+	markdown             = "markdown"
+	MESSAGE_ID_JSON      = "message_id.json"
+	MESSAGE_ID_KB_JSON   = "message_id_kb.json"
+	MESSAGE_ID_PASS_JSON = "message_id_pass.json"
+)
 
 type TButton struct {
 	Text         string
@@ -32,7 +37,7 @@ func (k *Keyboard) AddButtonsRow(buttons ...TButton) {
 }
 
 func loadMessageID(obj *map[string][]int) error {
-	err := file_operations.JSONLoad(obj, "message_id.json")
+	err := file_operations.JSONLoad(obj, MESSAGE_ID_JSON)
 
 	if err != nil {
 		return fmt.Errorf("loadMessageID error: %v", err)
@@ -42,7 +47,7 @@ func loadMessageID(obj *map[string][]int) error {
 }
 
 func loadMessageIDPass(obj *[]int) error {
-	err := file_operations.JSONLoad(obj, "message_id_pass.json")
+	err := file_operations.JSONLoad(obj, MESSAGE_ID_PASS_JSON)
 
 	if err != nil {
 		*obj = []int{}
@@ -54,7 +59,7 @@ func loadMessageIDPass(obj *[]int) error {
 }
 
 func dumpMessageIDPass(obj *[]int) error {
-	err := file_operations.JSONDump(obj, "message_id_pass.json")
+	err := file_operations.JSONDump(obj, MESSAGE_ID_PASS_JSON)
 
 	if err != nil {
 		return fmt.Errorf("dumpMessageIDPass error: %v", err)
@@ -64,7 +69,7 @@ func dumpMessageIDPass(obj *[]int) error {
 }
 
 func dumpMessageID(obj *map[string][]int) error {
-	err := file_operations.JSONDump(obj, "message_id.json")
+	err := file_operations.JSONDump(obj, MESSAGE_ID_JSON)
 
 	if err != nil {
 		return fmt.Errorf("dumpMessageID error: %v", err)
@@ -203,9 +208,9 @@ func UpdateMIArrays(userIDKey string, messageID int, isPassphrase bool) {
 
 func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 	m := make(map[int64]int)
-	_ = file_operations.JSONLoad(&m, "message_id_kb.json")
+	_ = file_operations.JSONLoad(&m, MESSAGE_ID_KB_JSON)
 	m[iUserID] = iMessageID
-	err := file_operations.JSONDump(&m, "message_id_kb.json")
+	err := file_operations.JSONDump(&m, MESSAGE_ID_KB_JSON)
 	if err != nil {
 		return
 	}
@@ -214,7 +219,7 @@ func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 // GetKeyboardMessageID возвращает messageID последней выведенной клавиатуры для редактирования.
 func GetKeyboardMessageID(iUserID int64) int {
 	m := make(map[int64]int)
-	err := file_operations.JSONLoad(&m, "message_id_kb.json")
+	err := file_operations.JSONLoad(&m, MESSAGE_ID_KB_JSON)
 	if err != nil {
 		return 0
 	}
