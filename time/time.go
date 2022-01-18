@@ -25,7 +25,7 @@ func LocalTimeFormatFromUnixNano(unixTime int, format ...string) string {
 	loc, _ := time.LoadLocation("Europe/Moscow")
 	time.Local = loc
 
-	t := time.Unix(int64(unixTime/1e9), int64(unixTime%1e9)).Local() //nolint:gomnd
+	t := time.Unix(int64(unixTime/1e9), int64(unixTime%1e9)).Local()
 
 	if len(format) > 0 {
 		return t.Format(format[0])

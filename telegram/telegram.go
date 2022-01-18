@@ -2,10 +2,10 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/padchin/utility/file_operations"
 	"strconv"
 
 	telegram "github.com/padchin/telegram-bot-api"
+	"github.com/padchin/utility/file_operations"
 )
 
 const (
@@ -94,12 +94,14 @@ func DeletePreviousMessages(userID int64, bot *telegram.BotAPI, isPassphrase boo
 		if len(m[sUserID]) > 0 {
 			// исключаем активную клавиатуру из списка на удаление
 			exMessage := GetKeyboardMessageID(userID)
+
 			for _, iMessageID := range m[sUserID] {
 				if iMessageID != exMessage {
 					msgDelete := telegram.NewDeleteMessage(userID, iMessageID)
 					_, _ = bot.Send(msgDelete)
 				}
 			}
+
 			m[sUserID] = nil
 		}
 	} else {
@@ -108,9 +110,11 @@ func DeletePreviousMessages(userID int64, bot *telegram.BotAPI, isPassphrase boo
 				msgDelete := telegram.NewDeleteMessage(userID, iMessageID)
 				_, _ = bot.Send(msgDelete)
 			}
+
 			p = nil
 		}
 	}
+
 	if !isPassphrase {
 		_ = dumpMessageID(&m)
 	} else {
@@ -211,6 +215,7 @@ func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 	_ = file_operations.JSONLoad(&m, MESSAGE_ID_KB_JSON)
 	m[iUserID] = iMessageID
 	err := file_operations.JSONDump(&m, MESSAGE_ID_KB_JSON)
+
 	if err != nil {
 		return
 	}
@@ -219,9 +224,12 @@ func storeKeyboardMessageID(iUserID int64, iMessageID int) {
 // GetKeyboardMessageID возвращает messageID последней выведенной клавиатуры для редактирования.
 func GetKeyboardMessageID(iUserID int64) int {
 	m := make(map[int64]int)
+
 	err := file_operations.JSONLoad(&m, MESSAGE_ID_KB_JSON)
+
 	if err != nil {
 		return 0
 	}
+
 	return m[iUserID]
 }

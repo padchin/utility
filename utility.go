@@ -14,7 +14,7 @@ import (
 	tb "github.com/padchin/utility/telegram"
 )
 
-const iAdminChatID int64 = 726713220
+const ADMIN_CHAT_ID int64 = 726713220
 
 // ErrNotPublished возвращается, если сообщение не опубликовано.
 var ErrNotPublished = errors.New("сообщение не опубликовано")
@@ -36,11 +36,11 @@ type ReporterOptions struct {
 	Message string
 }
 
-// Reporter публикует сообщение в логах и в Telegram (список пользователей указывается в параметрах), при
+// Send публикует сообщение в логах и в Telegram (список пользователей указывается в параметрах), при
 // наличии экземпляра бота. Если указан интервал 0, то сообщение публикуется в любом случае. Если интервал не 0, то
 // нужно указать ссылку на время последней публикации, которое при удачной в публикации в логах изменяется на текущее. В
 // этом случае сообщение публикуется не чаще, чем через интервал, указанный в параметрах.
-func Reporter(r ReporterOptions) error {
+func (r *ReporterOptions) Send() error {
 	if r.Interval != 0 && r.LastReported == nil {
 		return ErrTimeNotSpecified
 	}
@@ -62,12 +62,12 @@ func Reporter(r ReporterOptions) error {
 			}
 		}
 
-		fmt.Println(r.Message) //nolint:forbidigo
+		fmt.Println(r.Message)
 
 		if r.Bot != nil {
 			if r.ChatIDs == nil || len(*r.ChatIDs) == 0 {
 				// если не указан список пользователей, отправляется только админу
-				tb.SendMessage(iAdminChatID, r.Message, r.Bot, false, true)
+				tb.SendMessage(ADMIN_CHAT_ID, r.Message, r.Bot, false, true)
 			} else {
 				for _, chat := range *r.ChatIDs {
 					tb.SendMessage(chat, r.Message, r.Bot, false, true)
@@ -126,7 +126,7 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 		if time.Since(dtOfLine) < logDuration {
 			_, err = writer.WriteString(line + "\n")
 			if err != nil {
-				return fmt.Errorf("error writung to log file: %v", err)
+				return fmt.Errorf("error writing to log file: %v", err)
 			}
 		}
 	}

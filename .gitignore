@@ -1,3 +1,4 @@
 
 *.xml
 go.sum
+.history
