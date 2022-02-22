@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	markdown             = "markdown"
+	MARKDOWN             = "markdown"
 	MESSAGE_ID_JSON      = "message_id.json"
 	MESSAGE_ID_KB_JSON   = "message_id_kb.json"
 	MESSAGE_ID_PASS_JSON = "message_id_pass.json"
@@ -122,7 +122,7 @@ func DeletePreviousMessages(userID int64, bot *telegram.BotAPI, isPassphrase boo
 	}
 }
 
-func EditMessageWithMarkup(iUserID int64, iMessageID int, sMessage string, bot *telegram.BotAPI, markup telegram.InlineKeyboardMarkup, deletePrevious ...bool) {
+func EditMessageWithMarkup(iUserID int64, iMessageID int, sMessage string, bot *telegram.BotAPI, markup telegram.InlineKeyboardMarkup, deletePrevious ...bool) error {
 	if len(deletePrevious) > 0 {
 		if deletePrevious[0] {
 			DeletePreviousMessages(iUserID, bot, false)
@@ -136,14 +136,16 @@ func EditMessageWithMarkup(iUserID int64, iMessageID int, sMessage string, bot *
 		markup,
 	)
 
-	msg.ParseMode = markdown
-	_, _ = bot.Send(msg)
+	msg.ParseMode = MARKDOWN
+	_, err := bot.Send(msg)
+
+	return err
 }
 
 // SendMessageWithMarkup отправляет сообщение с клавиатурой с использованием экземпляра бота и добавляет messageID в базу для
 // последующего удаления. Если требуется удалить предыдущие сообщения, имеющиеся в базе, установить флаг deletePrevious
 // в true.
-func SendMessageWithMarkup(iUserID int64, message string, bot *telegram.BotAPI, markup telegram.InlineKeyboardMarkup, deletePrevious bool) {
+func SendMessageWithMarkup(iUserID int64, message string, bot *telegram.BotAPI, markup telegram.InlineKeyboardMarkup, deletePrevious bool) error {
 	if deletePrevious {
 		DeletePreviousMessages(iUserID, bot, false)
 	}
@@ -154,16 +156,18 @@ func SendMessageWithMarkup(iUserID int64, message string, bot *telegram.BotAPI, 
 		message,
 	)
 	msg.ReplyMarkup = markup
-	msg.ParseMode = markdown
-	reply, _ := (*bot).Send(msg)
+	msg.ParseMode = MARKDOWN
+	reply, err := (*bot).Send(msg)
 	storeKeyboardMessageID(iUserID, reply.MessageID)
 	UpdateMIArrays(sUserID, reply.MessageID, false)
+
+	return err
 }
 
 // SendMessage отправляет сообщение без клавиатуры с использованием экземпляра бота и добавляет messageID в базу для
 // последующего удаления. Если требуется удалить предыдущие сообщения, имеющиеся в базе, установить флаг deletePrevious
 // в true. Если нужно исключить сообщение из базы для последующего удаления установить флаг persist в true.
-func SendMessage(iUserID int64, sMessage string, bot *telegram.BotAPI, deletePrevious bool, persist ...bool) {
+func SendMessage(iUserID int64, sMessage string, bot *telegram.BotAPI, deletePrevious bool, persist ...bool) error {
 	if deletePrevious {
 		DeletePreviousMessages(iUserID, bot, false)
 	}
@@ -173,16 +177,18 @@ func SendMessage(iUserID int64, sMessage string, bot *telegram.BotAPI, deletePre
 		iUserID,
 		sMessage,
 	)
-	msg.ParseMode = markdown
-	reply, _ := bot.Send(msg)
+	msg.ParseMode = MARKDOWN
+	reply, err := bot.Send(msg)
 
 	if len(persist) > 0 {
 		if persist[0] {
-			return
+			return err
 		}
 	}
 
 	UpdateMIArrays(sUserID, reply.MessageID, false)
+
+	return err
 }
 
 // UpdateMIArrays обновляет существующие массивы с идентификаторами сообщений для удаления.
