@@ -177,7 +177,32 @@ func SendMessage(iUserID int64, sMessage string, bot *telegram.BotAPI, deletePre
 		iUserID,
 		sMessage,
 	)
+
 	msg.ParseMode = MARKDOWN
+	reply, err := bot.Send(msg)
+
+	if len(persist) > 0 {
+		if persist[0] {
+			return err
+		}
+	}
+
+	UpdateMIArrays(sUserID, reply.MessageID, false)
+
+	return err
+}
+
+func SendDocument(iUserID int64, documentPath string, bot *telegram.BotAPI, deletePrevious bool, persist ...bool) error {
+	if deletePrevious {
+		DeletePreviousMessages(iUserID, bot, false)
+	}
+
+	sUserID := strconv.Itoa(int(iUserID))
+	msg := telegram.NewDocumentUpload(
+		iUserID,
+		documentPath,
+	)
+
 	reply, err := bot.Send(msg)
 
 	if len(persist) > 0 {
