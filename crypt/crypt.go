@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	mathrand "math/rand"
 	"os"
 	"time"
@@ -102,7 +101,7 @@ func passPhraseGen(iPhraseLength int) []byte {
 }
 
 func secretHashRead() ([]byte, error) {
-	secret, errRead := ioutil.ReadFile("secret")
+	secret, errRead := os.ReadFile("secret")
 
 	if errRead != nil {
 		return nil, errRead
@@ -113,7 +112,7 @@ func secretHashRead() ([]byte, error) {
 
 // secretHashWrite записывает хэш в файл secret текущего каталога.
 func secretHashWrite(secret *[]byte) error {
-	err := ioutil.WriteFile("secret", *secret, 0600)
+	err := os.WriteFile("secret", *secret, 0600)
 
 	return err
 }

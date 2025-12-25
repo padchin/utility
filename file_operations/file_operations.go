@@ -3,7 +3,6 @@ package file_operations
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -133,7 +132,7 @@ func JSONDump(obj interface{}, file string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(file, jsonBytes, 0644)
+	err = os.WriteFile(file, jsonBytes, 0644)
 
 	if err != nil {
 		return err
@@ -143,7 +142,7 @@ func JSONDump(obj interface{}, file string) error {
 }
 
 func JSONLoad(obj interface{}, file string) error {
-	jsonBytes, err := ioutil.ReadFile(file)
+	jsonBytes, err := os.ReadFile(file)
 
 	if err != nil {
 		return err
