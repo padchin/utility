@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"sync"
 	"time"
 
@@ -45,7 +44,7 @@ func (r *ReporterOptions) Send() error {
 		return ErrTimeNotSpecified
 	}
 
-	if r.Interval == 0 || r.LastReported != nil && time.Since(*r.LastReported) > r.Interval {
+	if r.Interval == 0 || (r.LastReported != nil && time.Since(*r.LastReported) > r.Interval) {
 		if r.Locker != nil {
 			r.Locker.Lock()
 			defer r.Locker.Unlock()
@@ -97,12 +96,15 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 	if err != nil {
 		return fmt.Errorf("error opening log file: %v", err)
 	}
+	defer origFile.Close()
 
-	newFile, err := os.Create(logFile + ".new")
+	newFileName := logFile + ".new"
+	newFile, err := os.Create(newFileName)
 
 	if err != nil {
 		return fmt.Errorf("error creating new temporary log file: %v", err)
 	}
+	defer newFile.Close()
 
 	writer := bufio.NewWriter(newFile)
 
@@ -141,23 +143,12 @@ func LogFileReduceByTime(logFile string, logDuration time.Duration, locker *sync
 		return fmt.Errorf("error flushing new temporary log file: %v", err)
 	}
 
-	err = newFile.Close()
-
-	if err != nil {
-		return fmt.Errorf("error closing new temporary log file: %v", err)
-	}
-
-	_ = origFile.Close()
-
-	err = exec.Command("mv", logFile, logFile+".bak").Run()
-
-	if err != nil {
+	backupFileName := logFile + ".bak"
+	if err = os.Rename(logFile, backupFileName); err != nil {
 		return fmt.Errorf("error creating backup of original log file: %v", err)
 	}
 
-	err = exec.Command("mv", logFile+".new", logFile).Run()
-
-	if err != nil {
+	if err = os.Rename(newFileName, logFile); err != nil {
 		return fmt.Errorf("error moving new log file to original log file: %v", err)
 	}
 
